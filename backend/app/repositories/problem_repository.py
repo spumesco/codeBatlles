@@ -1,89 +1,49 @@
-from __future__ import annotations
-
-from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.sql.expression import func
-
-from app.models.problem import Problem
-from app.models.test_case import TestCase
-
+from sqlalchemy.orm import Session
+from models import Problem, TestCase
 
 class ProblemRepository:
+    # 1. 새 문제 등록
     @staticmethod
-    async def create_problem(db: AsyncSession, **kwargs) -> Problem:
-        problem = Problem(**kwargs)
-        db.add(problem)
-        await db.commit()
-        await db.refresh(problem)
-        return problem
+    def create_problem(db: Session, title: str, description: str, input_desc: str, output_desc: str, difficulty: str, time_limit: int, memory_limit: int) -> Problem:
+        new_problem = Problem(
+            title=title,
+            description=description,
+            input_description=input_desc,
+            output_description=output_desc,
+            difficulty=difficulty,
+            time_limit=time_limit,
+            memory_limit=memory_limit
+        )
+        db.add(new_problem)
+        db.commit()
+        db.refresh(new_problem)
+        return new_problem
 
+    # 2. 테스트 케이스 추가
     @staticmethod
-    async def add_test_case(
-        db: AsyncSession,
-        problem_id: int,
-        input_data: str,
-        expected_output: str,
-        is_sample: bool = False,
-        case_order: int = 1,
-        description: Optional[str] = None,
-    ) -> TestCase:
-        tc = TestCase(
+    def add_test_case(db: Session, problem_id: int, input_data: str, expected_output: str, is_sample: bool = False, case_order: int = 1) -> TestCase:
+        test_case = TestCase(
             problem_id=problem_id,
             input_data=input_data,
             expected_output=expected_output,
             is_sample=is_sample,
-            case_order=case_order,
-            description=description,
+            case_order=case_order
         )
-        db.add(tc)
-        await db.commit()
-        await db.refresh(tc)
-        return tc
+        db.add(test_case)
+        db.commit()
+        return test_case
 
+    # 3. 문제와 연관된 테스트 케이스 한 번에 불러오기
     @staticmethod
-    async def get_all_problems(db: AsyncSession) -> list[Problem]:
-        result = await db.execute(select(Problem).where(Problem.is_deleted == False))
-        return list(result.scalars().all())
+    def get_problem_with_testcases(db: Session, problem_id: int) -> Problem | None:
+        # models.py에 relationship을 설정해두었기 때문에 문제만 조회해도 test_cases가 딸려옴!
+        return db.query(Problem).filter(Problem.id == problem_id, Problem.is_deleted == False).first()
 
+    # 4. 랜덤으로 배틀용 문제 하나 뽑기 (난이도별)
     @staticmethod
-    async def get_problem(db: AsyncSession, problem_id: int) -> Problem | None:
-        result = await db.execute(
-            select(Problem).where(Problem.id == problem_id, Problem.is_deleted == False)
-        )
-        return result.scalar_one_or_none()
-
-    @staticmethod
-    async def get_test_cases(db: AsyncSession, problem_id: int) -> list[TestCase]:
-        result = await db.execute(
-            select(TestCase).where(TestCase.problem_id == problem_id).order_by(TestCase.case_order)
-        )
-        return list(result.scalars().all())
-
-    @staticmethod
-    async def get_random_problem(db: AsyncSession, difficulty: Optional[str] = None) -> Problem | None:
-        query = select(Problem).where(Problem.is_deleted == False)
-        if difficulty:
-            query = query.where(Problem.difficulty == difficulty)
-        result = await db.execute(query.order_by(func.random()))
-        return result.scalar_one_or_none()
-
-    @staticmethod
-    async def update_problem(db: AsyncSession, problem_id: int, **kwargs) -> Problem | None:
-        problem = await ProblemRepository.get_problem(db, problem_id)
-        if problem:
-            for k, v in kwargs.items():
-                if v is not None:
-                    setattr(problem, k, v)
-            await db.commit()
-            await db.refresh(problem)
-        return problem
-
-    @staticmethod
-    async def delete_problem(db: AsyncSession, problem_id: int) -> bool:
-        problem = await ProblemRepository.get_problem(db, problem_id)
-        if problem:
-            problem.is_deleted = True
-            await db.commit()
-            return True
-        return False
+    def get_random_problem(db: Session, difficulty: str) -> Problem | None:
+        from sqlalchemy.sql.expression import func
+        return db.query(Problem).filter(
+            Problem.difficulty == difficulty,
+            Problem.is_deleted == False
+        ).order_by(func.random()).first()
