@@ -1,14 +1,23 @@
-aiomysql==0.3.2
-aiosqlite==0.20.0
 fastapi==0.136.1
+uvicorn[standard]==0.46.0
+
+# Database
+SQLAlchemy==2.0.49
+aiomysql==0.3.2
+PyMySQL==1.1.3
 greenlet==3.5.0
-httpx==0.27.0
+
+# Auth
 passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# Pydantic / Settings
 pydantic==2.13.4
 pydantic-settings==2.14.1
-PyMySQL==1.1.3
 python-dotenv==1.2.2
-python-jose[cryptography]==3.3.0
-SQLAlchemy==2.0.49
-uvicorn[standard]==0.46.0
+
+# HTTP client (Judge0 연동)
+httpx==0.27.0
+
+# WebSocket
 websockets==16.0
