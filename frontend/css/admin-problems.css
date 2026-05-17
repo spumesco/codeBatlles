@@ -1,0 +1,102 @@
+/* ===== admin-problems.html CSS ===== */
+
+.page-wrap {
+  max-width: 1280px;
+  margin: 2rem auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 1.5rem;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #c1c6d7;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 12px;
+  color: #717786;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+th {
+  color: #717786;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid #c1c6d7;
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: 0.75rem 0.8rem;
+  border-bottom: 1px solid #e5e2e1;
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f6f3f2; }
+
+.form-label {
+  font-size: 0.8rem;
+  color: #717786;
+  margin-bottom: 0.3rem;
+  display: block;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.form-input {
+  background: #fcf9f8;
+  border: 1px solid #c1c6d7;
+  color: #1c1b1b;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  outline: none;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus { border-color: #0058bc; }
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 70px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.select-input {
+  background: #fcf9f8;
+  border: 1px solid #c1c6d7;
+  color: #1c1b1b;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  outline: none;
+}
+
+.tc-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}

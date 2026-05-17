@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "surface-dim": "#dcd9d9",
+          "primary-container": "#0070eb",
+          "primary": "#0058bc",
+          "on-tertiary-fixed": "#07006c",
+          "outline-variant": "#c1c6d7",
+          "error": "#ba1a1a",
+          "secondary": "#5e5e5e",
+          "inverse-primary": "#adc6ff",
+          "on-surface-variant": "#414755",
+          "on-secondary-fixed-variant": "#474747",
+          "on-primary": "#ffffff",
+          "tertiary-container": "#6063ee",
+          "tertiary": "#4648d4",
+          "on-secondary-container": "#646464",
+          "surface": "#fcf9f8",
+          "secondary-fixed-dim": "#c6c6c6",
+          "on-tertiary": "#ffffff",
+          "on-secondary-fixed": "#1b1b1b",
+          "on-error-container": "#93000a",
+          "surface-container-lowest": "#ffffff",
+          "tertiary-fixed-dim": "#c0c1ff",
+          "on-tertiary-container": "#fffbff",
+          "on-surface": "#1c1b1b",
+          "surface-variant": "#e5e2e1",
+          "secondary-fixed": "#e2e2e2",
+          "on-primary-fixed": "#001a41",
+          "surface-container-high": "#ebe7e7",
+          "on-background": "#1c1b1b",
+          "secondary-container": "#e2e2e2",
+          "inverse-on-surface": "#f3f0ef",
+          "on-primary-fixed-variant": "#004493",
+          "on-primary-container": "#fefcff",
+          "surface-container-low": "#f6f3f2",
+          "surface-tint": "#005bc1",
+          "inverse-surface": "#313030",
+          "surface-container-highest": "#e5e2e1",
+          "surface-bright": "#fcf9f8",
+          "primary-fixed": "#d8e2ff",
+          "on-secondary": "#ffffff",
+          "outline": "#717786",
+          "primary-fixed-dim": "#adc6ff",
+          "on-error": "#ffffff",
+          "error-container": "#ffdad6",
+          "on-tertiary-fixed-variant": "#2f2ebe",
+          "background": "#fcf9f8",
+          "surface-container": "#f0edec",
+          "tertiary-fixed": "#e1e0ff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "base": "4px",
+          "sm": "8px",
+          "md": "16px",
+          "container-max": "1280px",
+          "lg": "24px",
+          "xl": "48px",
+          "xs": "4px",
+          "gutter": "20px"
+        },
+        "fontFamily": {
+          "code-md": ["JetBrains Mono"],
+          "body-sm": ["Space Grotesk"],
+          "body-md": ["Space Grotesk"],
+          "h1": ["Space Grotesk"],
+          "h2": ["Space Grotesk"],
+          "display": ["Space Grotesk"],
+          "body-lg": ["Space Grotesk"],
+          "label-md": ["Space Grotesk"],
+          "h3": ["Space Grotesk"]
+        },
+        "fontSize": {
+          "code-md": ["14px", {"lineHeight": "1.7", "fontWeight": "400"}],
+          "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+          "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+          "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+          "h2": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+          "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+          "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+          "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+          "h3": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}]
+        }
+      },
+    },
+  }
+</script>
+<link href="css/style.css" rel="stylesheet"/>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+
+  <!-- 네비게이션 바가 삽입될 자리 -->
+  <div id="navbar-container"></div>
+
+  <main class="bg-surface">
+
+    <!-- 히어로 섹션 -->
+    <section class="relative flex flex-col items-center justify-center text-center py-32 px-5 overflow-hidden">
+      <div class="absolute top-[-80px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary opacity-5 blur-3xl pointer-events-none"></div>
+
+      <div class="relative mb-6">
+        <span class="font-code-md text-label-md text-primary uppercase tracking-widest mb-4 block">1:1 코드 배틀 플랫폼</span>
+        <h1 class="font-display text-display text-on-surface leading-tight">
+          Code<span class="text-primary">Battles</span>
+        </h1>
+        <div class="mx-auto mt-3 h-1 w-24 rounded-full bg-primary opacity-60"></div>
+      </div>
+
+      <p class="font-body-lg text-body-lg text-secondary max-w-xl mb-3">
+        실시간으로 상대와 코드를 겨루는 1:1 코드 배틀 플랫폼
+      </p>
+      <p class="font-body-md text-body-md text-on-surface-variant max-w-lg mb-12">
+        문제를 풀고, 제출하고, 먼저 정답을 맞히면 승리합니다.
+      </p>
+
+      <div class="flex items-center gap-md">
+        <button onclick="location.href='/main'" class="font-body-md text-body-md px-lg py-md bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-container active:scale-95 transition-all shadow-md hover:shadow-lg">
+          배틀 시작하기
+        </button>
+        <button onclick="location.href='/register'" class="font-body-md text-body-md px-lg py-md border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary-fixed active:scale-95 transition-all">
+          회원가입
+        </button>
+      </div>
+    </section>
+
+    <!-- 구분선 -->
+    <div class="border-t border-outline-variant"></div>
+
+    <!-- 기능 소개 섹션 -->
+    <section class="py-12 px-5 bg-surface-container-low">
+      <div class="max-w-[1280px] mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
+            <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
+              <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">bolt</span>
+            </div>
+            <h3 class="font-h3 text-h3 text-on-surface mb-2">실시간 매칭</h3>
+            <p class="font-body-sm text-body-sm text-secondary">온라인 사용자와 즉시 매칭되어 바로 배틀을 시작할 수 있습니다.</p>
+          </div>
+
+          <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
+            <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
+              <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">code</span>
+            </div>
+            <h3 class="font-h3 text-h3 text-on-surface mb-2">라이브 코드 공유</h3>
+            <p class="font-body-sm text-body-sm text-secondary">상대방의 코드를 실시간으로 확인하며 전략적으로 대응하세요.</p>
+          </div>
+
+          <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
+            <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
+              <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">check_circle</span>
+            </div>
+            <h3 class="font-h3 text-h3 text-on-surface mb-2">Judge0 채점</h3>
+            <p class="font-body-sm text-body-sm text-secondary">제출한 코드를 Judge0 엔진이 자동으로 채점해 즉시 결과를 알려드립니다.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    fetch('components/guest-navbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('navbar-container').innerHTML = html;
+      })
+      .catch(() => {
+        console.warn('guest-navbar.html을 불러오지 못했습니다.');
+      });
+  </script>
+
+</body>
+</html>

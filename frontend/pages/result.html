@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode:"class",
+  theme:{extend:{
+    colors:{"primary-container":"#0070eb","primary":"#0058bc","outline-variant":"#c1c6d7","on-primary":"#ffffff","secondary":"#5e5e5e","on-surface":"#1c1b1b","surface":"#fcf9f8","outline":"#717786"},
+    borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},
+    spacing:{"sm":"8px","md":"16px","container-max":"1280px","lg":"24px","xl":"48px","gutter":"20px"},
+    fontFamily:{"body-md":["Space Grotesk"],"display":["Space Grotesk"],"code-md":["JetBrains Mono"]},
+    fontSize:{"body-md":["16px",{"lineHeight":"1.6"}],"h2":["24px",{"lineHeight":"1.3","fontWeight":"600"}],"display":["48px",{"lineHeight":"1.1","fontWeight":"700"}]}
+  }}
+}
+</script>
+<style>
+body{background-color:#fcf9f8;margin:0;padding:0;}
+.result-wrap{max-width:700px;margin:3rem auto;padding:0 1.5rem;}
+.result-banner{text-align:center;padding:2.5rem;border-radius:12px;margin-bottom:1.5rem;border:2px solid #16a34a;background:linear-gradient(135deg,#f0fdf4,#fcf9f8);animation:fadeIn 0.5s ease;}
+.result-banner.lose{border-color:#dc2626;background:linear-gradient(135deg,#fff1f2,#fcf9f8);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.card{background:#fff;border:1px solid #c1c6d7;border-radius:8px;padding:1.5rem;margin-bottom:1rem;}
+.card-title{font-size:12px;color:#717786;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:1rem;}
+.info-row{display:flex;gap:0.5rem;margin-bottom:0.5rem;font-size:0.9rem;}
+.info-label{color:#717786;min-width:80px;}
+.submit-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.submit-box{background:#f6f3f2;border-radius:8px;padding:1rem;}
+.submit-box h6{font-size:0.75rem;color:#717786;text-transform:uppercase;margin-bottom:0.8rem;font-weight:600;letter-spacing:0.05em;}
+.submit-row{display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.4rem;}
+.submit-label{color:#717786;}
+</style>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+
+<div id="navbar-container"></div>
+
+<div class="result-wrap">
+
+  <!-- 결과 배너 -->
+  <div class="result-banner">
+    <div style="font-size:3rem;margin-bottom:0.5rem">🎉</div>
+    <div style="font-size:2rem;font-weight:700;color:#16a34a;margin-bottom:0.5rem;font-family:'Space Grotesk',sans-serif">승리</div>
+    <div style="color:#717786;font-size:0.9rem">상대보다 먼저 정답을 맞혔습니다.</div>
+  </div>
+
+  <!-- 배틀 정보 -->
+  <div class="card">
+    <div class="card-title">배틀 정보</div>
+    <div class="info-row">
+      <span class="info-label">문제</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-weight:700">A+B</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">상대</span>
+      <span style="font-weight:700">김건한</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">종료 시간</span>
+      <span style="font-family:'JetBrains Mono',monospace;color:#0058bc">2026-05-10 14:30</span>
+    </div>
+  </div>
+
+  <!-- 제출 결과 비교 -->
+  <div class="card">
+    <div class="card-title">제출 결과 비교</div>
+    <div class="submit-grid">
+      <div class="submit-box">
+        <h6>내 제출 결과</h6>
+        <div class="submit-row"><span class="submit-label">결과</span><span style="color:#16a34a;font-weight:700;font-family:'JetBrains Mono',monospace">Accepted</span></div>
+        <div class="submit-row"><span class="submit-label">언어</span><span>Python</span></div>
+        <div class="submit-row"><span class="submit-label">실행 시간</span><span style="font-family:'JetBrains Mono',monospace;color:#0058bc">0.002초</span></div>
+        <div class="submit-row"><span class="submit-label">메모리</span><span style="font-family:'JetBrains Mono',monospace;color:#0058bc">3400 KB</span></div>
+      </div>
+      <div class="submit-box">
+        <h6>상대 제출 결과</h6>
+        <div class="submit-row"><span class="submit-label">결과</span><span style="color:#dc2626;font-weight:700;font-family:'JetBrains Mono',monospace">Wrong Answer</span></div>
+        <div class="submit-row"><span class="submit-label">언어</span><span>Python</span></div>
+        <div class="submit-row"><span class="submit-label">실행 시간</span><span style="font-family:'JetBrains Mono',monospace;color:#717786">0.005초</span></div>
+        <div class="submit-row"><span class="submit-label">메모리</span><span style="font-family:'JetBrains Mono',monospace;color:#717786">3500 KB</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 전적 변화 -->
+  <div class="card">
+    <div class="card-title">전적 변화</div>
+    <div style="display:flex;align-items:center;gap:1rem;font-size:0.9rem;">
+      <span>이전: <span style="font-family:'JetBrains Mono',monospace;font-weight:700"><span style="color:#16a34a">3승</span> <span style="color:#dc2626">2패</span></span></span>
+      <span style="color:#0058bc;font-size:1.2rem">→</span>
+      <span>현재: <span style="font-family:'JetBrains Mono',monospace;font-weight:700"><span style="color:#16a34a">4승</span> <span style="color:#dc2626">2패</span></span></span>
+    </div>
+  </div>
+
+  <!-- 메인으로 -->
+  <a href="main.html" class="block w-full text-center px-md py-sm border border-outline-variant text-secondary rounded-lg font-body-md hover:border-primary hover:text-primary transition-all" style="margin-top:1rem;text-decoration:none;">
+    메인으로 돌아가기
+  </a>
+
+</div>
+<script>
+fetch('../components/user-navbar.html')
+  .then(response => response.text())
+  .then(html => {
+    document.getElementById('navbar-container').innerHTML = html;
+  })
+  .catch(() => {
+    console.warn('user-navbar.html을 불러오지 못했습니다.');
+  });
+</script>
+</body>
+</html>

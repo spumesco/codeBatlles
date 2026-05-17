@@ -1,0 +1,111 @@
+/* ===== 공통 Navbar CSS ===== */
+
+/* Tailwind 설정과 함께 쓰는 추가 스타일 */
+
+body {
+  background-color: #fcf9f8;
+  margin: 0;
+  padding: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #1c1b1b;
+}
+
+/* Navbar */
+header {
+  background-color: #fcf9f8;
+  border-bottom: 1px solid #c1c6d7;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.navbar-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.nav-logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0058bc;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.nav-links a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  color: #5e5e5e;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: #0058bc;
+}
+
+.nav-links a.active {
+  color: #0058bc;
+  font-weight: 700;
+  border-bottom: 2px solid #0058bc;
+  padding-bottom: 4px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-username {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  color: #5e5e5e;
+  font-weight: 500;
+}
+
+.btn-logout {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  padding: 8px 16px;
+  background-color: #0058bc;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-logout:hover {
+  background-color: #0070eb;
+}
+
+.btn-logout:active {
+  transform: scale(0.95);
+}
+
+.admin-badge {
+  font-size: 0.65rem;
+  background: #e3b341;
+  color: #000;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-left: 6px;
+  vertical-align: middle;
+}
