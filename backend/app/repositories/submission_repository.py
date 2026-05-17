@@ -1,11 +1,23 @@
-from sqlalchemy.orm import Session
-from models import Submission
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.submission import Submission
+
 
 class SubmissionRepository:
-    # 1. 제출 기록 저장
     @staticmethod
-    def create_submission(db: Session, battle_id: int, user_pk: int, problem_id: int, language: str, source_code: str, judge_status: str, exec_time: float = None, memory: int = None) -> Submission:
-        new_sub = Submission(
+    async def create_submission(
+        db: AsyncSession,
+        battle_id: int,
+        user_pk: int,
+        problem_id: int,
+        language: str,
+        source_code: str,
+        judge_status: str,
+        exec_time: float | None = None,
+        memory: int | None = None,
+    ) -> Submission:
+        sub = Submission(
             battle_id=battle_id,
             user_id=user_pk,
             problem_id=problem_id,
@@ -13,24 +25,29 @@ class SubmissionRepository:
             source_code=source_code,
             judge_status=judge_status,
             execution_time=exec_time,
-            memory_usage=memory
+            memory_usage=memory,
         )
-        db.add(new_sub)
-        db.commit()
-        db.refresh(new_sub)
-        return new_sub
+        db.add(sub)
+        await db.commit()
+        await db.refresh(sub)
+        return sub
 
-    # 2. 특정 배틀에서 제출된 모든 기록 조회 (시간순)
     @staticmethod
-    def get_submissions_by_battle(db: Session, battle_id: int):
-        return db.query(Submission).filter(Submission.battle_id == battle_id).order_by(Submission.created_at.asc()).all()
+    async def get_submissions_by_battle(db: AsyncSession, battle_id: int) -> list[Submission]:
+        result = await db.execute(
+            select(Submission)
+            .where(Submission.battle_id == battle_id)
+            .order_by(Submission.created_at.asc())
+        )
+        return result.scalars().all()
 
-    # 3. 특정 유저가 특정 배틀에서 "정답(Accepted)"을 받았는지 확인
     @staticmethod
-    def has_user_passed(db: Session, battle_id: int, user_pk: int) -> bool:
-        passed = db.query(Submission).filter(
-            Submission.battle_id == battle_id,
-            Submission.user_id == user_pk,
-            Submission.judge_status == "Accepted"
-        ).first()
-        return passed is not None
+    async def has_user_passed(db: AsyncSession, battle_id: int, user_pk: int) -> bool:
+        result = await db.execute(
+            select(Submission).where(
+                Submission.battle_id == battle_id,
+                Submission.user_id == user_pk,
+                Submission.judge_status == "Accepted",
+            )
+        )
+        return result.scalar_one_or_none() is not None

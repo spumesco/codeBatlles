@@ -1,8 +1,9 @@
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.routers import auth, users, match, battles, websocket
 
 app = FastAPI(
     title="CodeBattles API",
@@ -10,19 +11,19 @@ app = FastAPI(
     version="0.1.0",
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-FRONTEND_DIR = PROJECT_ROOT / "frontend"
-PAGES_DIR = FRONTEND_DIR / "pages"
-
-app.mount("/css", StaticFiles(directory=FRONTEND_DIR / "css"), name="css")
-app.mount("/js", StaticFiles(directory=FRONTEND_DIR / "js"), name="js")
-app.mount("/assets", StaticFiles(directory=FRONTEND_DIR / "assets"), name="assets")
-app.mount(
-    "/components",
-    StaticFiles(directory=FRONTEND_DIR / "components"),
-    name="components",
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-app.mount("/vendor", StaticFiles(directory=FRONTEND_DIR / "vendor"), name="vendor")
+
+app.include_router(auth.router)
+app.include_router(users.router)
+app.include_router(match.router)
+app.include_router(battles.router)
+app.include_router(websocket.router)
 
 
 @app.get("/")
