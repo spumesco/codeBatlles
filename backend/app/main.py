@@ -2,6 +2,8 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.routers import auth, users, match, battles, websocket
 
@@ -25,6 +27,15 @@ app.include_router(match.router)
 app.include_router(battles.router)
 app.include_router(websocket.router)
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+FRONTEND_DIR = PROJECT_ROOT / "frontend"
+PAGES_DIR = FRONTEND_DIR / "pages"
+
+app.mount("/css", StaticFiles(directory=FRONTEND_DIR / "css"), name="css")
+app.mount("/js", StaticFiles(directory=FRONTEND_DIR / "js"), name="js")
+app.mount("/assets", StaticFiles(directory=FRONTEND_DIR / "assets"), name="assets")
+app.mount("/components", StaticFiles(directory=FRONTEND_DIR / "components"), name="components")
+app.mount("/vendor", StaticFiles(directory=FRONTEND_DIR / "vendor"), name="vendor")
 
 @app.get("/")
 def index_page():
