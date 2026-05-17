@@ -131,10 +131,10 @@
       </p>
 
       <div class="flex items-center gap-md">
-        <button class="font-body-md text-body-md px-lg py-md bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-container active:scale-95 transition-all shadow-md hover:shadow-lg">
+        <button onclick="location.href='/main'" class="font-body-md text-body-md px-lg py-md bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-container active:scale-95 transition-all shadow-md hover:shadow-lg">
           배틀 시작하기
         </button>
-        <button class="font-body-md text-body-md px-lg py-md border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary-fixed active:scale-95 transition-all">
+        <button onclick="location.href='/register'" class="font-body-md text-body-md px-lg py-md border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary-fixed active:scale-95 transition-all">
           회원가입
         </button>
       </div>
@@ -179,13 +179,13 @@
   </main>
 
   <script>
-    fetch('components/navbar.html')
+    fetch('components/guest-navbar.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('navbar-container').innerHTML = html;
       })
       .catch(() => {
-        console.warn('navbar.html을 불러오지 못했습니다. components 폴더에 있는지 확인하세요.');
+        console.warn('guest-navbar.html을 불러오지 못했습니다.');
       });
   </script>
 

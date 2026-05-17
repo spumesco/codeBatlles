@@ -103,7 +103,11 @@
   }
 </script>
 </head>
-<body class="bg-surface font-body-md text-on-surface min-h-screen flex items-center justify-center">
+<body class="bg-surface font-body-md text-on-surface min-h-screen">
+
+  <div id="navbar-container"></div>
+
+  <main class="min-h-[calc(100vh-64px)] flex items-center justify-center px-5 py-10">
 
   <div class="w-full max-w-sm px-8 py-10 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
 
@@ -145,10 +149,21 @@
     <!-- 회원가입 링크 -->
     <p class="text-center font-body-sm text-body-sm text-secondary">
       계정이 없으신가요?
-      <a href="register.html" class="text-primary font-bold hover:underline">회원가입</a>
+      <a href="/register" class="text-primary font-bold hover:underline">회원가입</a>
     </p>
-
   </div>
 
+  </main>
+
+  <script>
+fetch('../components/user-navbar.html')
+  .then(response => response.text())
+  .then(html => {
+    document.getElementById('navbar-container').innerHTML = html;
+  })
+  .catch(() => {
+    console.warn('user-navbar.html을 불러오지 못했습니다.');
+  });
+</script>
 </body>
 </html>

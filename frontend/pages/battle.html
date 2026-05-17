@@ -20,47 +20,28 @@ tailwind.config = {
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background-color:#fcf9f8;font-family:'Space Grotesk',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
-.top-bar{background:#fff;border-bottom:1px solid #c1c6d7;height:52px;display:flex;align-items:center;padding:0 1.5rem;gap:2rem;flex-shrink:0;}
-.logo{font-weight:700;color:#0058bc;font-size:1rem;}
 .timer{font-family:'JetBrains Mono',monospace;font-size:1rem;color:#0058bc;font-weight:700;}
-.main-area{display:flex;flex:1;overflow:hidden;}
-.drawer{width:0;background:#fff;border-right:1px solid #c1c6d7;overflow:hidden;transition:width 0.3s ease;flex-shrink:0;}
-.drawer.open{width:340px;}
+.main-area{position:relative;display:flex;flex:1;overflow:hidden;}
+.drawer{position:absolute;left:0;top:0;bottom:0;width:340px;background:#fff;border-right:1px solid #c1c6d7;overflow:hidden;transform:translateX(-100%);transition:transform 0.3s ease;z-index:20;box-shadow:8px 0 24px rgba(28,27,27,0.12);}
+.drawer.open{transform:translateX(0);}
 .drawer-inner{width:340px;padding:1.2rem;height:100%;overflow-y:auto;}
 .section-label{font-size:0.75rem;color:#717786;margin-top:1rem;margin-bottom:0.3rem;font-family:'JetBrains Mono',monospace;}
 .section-body{font-size:0.85rem;line-height:1.6;color:#414755;background:#f6f3f2;border-radius:6px;padding:0.7rem;}
 .code-example{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#0058bc;background:#f0f4ff;border-radius:6px;padding:0.7rem;}
-.editors{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;}
+.editors{display:grid;grid-template-columns:1fr 1fr;width:100%;flex:1;overflow:hidden;}
 .editor-pane{display:flex;flex-direction:column;border-right:1px solid #c1c6d7;overflow:hidden;}
 .editor-pane:last-child{border-right:none;}
 .editor-header{background:#f6f3f2;border-bottom:1px solid #c1c6d7;padding:0.5rem 1rem;display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;flex-shrink:0;}
 .editor-body{flex:1;background:#fcf9f8;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:0.85rem;line-height:1.7;overflow-y:auto;}
 textarea.editor-body{resize:none;border:none;outline:none;color:#1c1b1b;width:100%;}
-.editor-footer{background:#f6f3f2;border-top:1px solid #c1c6d7;padding:0.5rem 1rem;display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;flex-shrink:0;}
-.lang-select{background:#fff;border:1px solid #c1c6d7;color:#1c1b1b;padding:3px 10px;border-radius:4px;font-size:0.8rem;}
+.editor-footer{background:#f6f3f2;border-top:1px solid #c1c6d7;padding:0.5rem 1rem;display:grid;grid-template-columns:120px 1fr 96px;gap:1rem;align-items:center;min-height:52px;font-size:0.8rem;flex-shrink:0;}
+.lang-select{background:#fff;border:1px solid #c1c6d7;color:#1c1b1b;padding:3px 10px;border-radius:4px;font-size:0.8rem;width:100%;height:32px;}
+.footer-center{justify-self:center;text-align:center;min-width:0;}.footer-action{justify-self:end;width:96px;}.submit-button{width:96px;height:32px;display:inline-flex;align-items:center;justify-content:center;}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR (navbar 스타일로) -->
-<div class="top-bar">
-  <span class="logo">CodeBattles</span>
-  <div style="display:flex;align-items:center;gap:1rem;flex:1;">
-    <span style="font-size:0.85rem;font-weight:700;">나: 철몽</span>
-    <span style="color:#16a34a;font-size:0.8rem;font-family:'JetBrains Mono',monospace">3승</span>
-    <span style="color:#dc2626;font-size:0.8rem;font-family:'JetBrains Mono',monospace">2패</span>
-    <span style="color:#717786;font-weight:700;margin:0 0.5rem">VS</span>
-    <span style="font-size:0.85rem;font-weight:700;">상대: 김건한</span>
-    <span style="color:#16a34a;font-size:0.8rem;font-family:'JetBrains Mono',monospace">5승</span>
-    <span style="color:#dc2626;font-size:0.8rem;font-family:'JetBrains Mono',monospace">1패</span>
-  </div>
-  <div style="display:flex;align-items:center;gap:1.5rem;">
-    <span style="font-size:0.85rem;color:#717786">상태: <strong style="color:#16a34a">진행 중</strong></span>
-    <span class="timer" id="timer">00:00</span>
-    <button id="toggleDrawer" onclick="toggleDrawer()" class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:border-primary hover:text-primary transition-all">문제 보기</button>
-  </div>
-</div>
-
+<div id="navbar-container"></div>
 <div class="main-area">
   <!-- SIDE DRAWER -->
   <div class="drawer" id="drawer">
@@ -92,7 +73,11 @@ textarea.editor-body{resize:none;border:none;outline:none;color:#1c1b1b;width:10
         <span style="color:#717786"># 상대방이 작성 중입니다...</span><br/><br/>
         <span style="color:#dc2626">print</span>(<span style="color:#0058bc">"상대 코드"</span>)
       </div>
-      <div class="editor-footer"><span style="color:#717786">Python</span></div>
+      <div class="editor-footer">
+        <span style="color:#717786">Python</span>
+        <span class="footer-center" style="color:#717786">읽기 전용</span>
+        <span class="footer-action"></span>
+      </div>
     </div>
     <div class="editor-pane">
       <div class="editor-header">
@@ -102,8 +87,8 @@ textarea.editor-body{resize:none;border:none;outline:none;color:#1c1b1b;width:10
 print(a + b)</textarea>
       <div class="editor-footer">
         <select class="lang-select"><option>Python</option><option>Java</option><option>C++</option></select>
-        <span id="judgeResult" style="font-family:'JetBrains Mono',monospace;color:#717786;font-size:0.8rem">채점 결과: -</span>
-        <button onclick="submitCode()" class="px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all">제출</button>
+        <span id="judgeResult" class="footer-center" style="font-family:'JetBrains Mono',monospace;color:#717786;font-size:0.8rem">채점 결과: -</span>
+        <button onclick="submitCode()" class="footer-action submit-button px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all">제출</button>
       </div>
     </div>
   </div>
@@ -115,7 +100,8 @@ setInterval(()=>{
   sec++;
   const m=String(Math.floor(sec/60)).padStart(2,'0');
   const s=String(sec%60).padStart(2,'0');
-  document.getElementById('timer').textContent=m+':'+s;
+  const timerEl=document.getElementById('timer');
+  if(timerEl) timerEl.textContent=m+':'+s;
 },1000);
 function toggleDrawer(){
   const d=document.getElementById('drawer');
@@ -130,6 +116,16 @@ function submitCode(){
     setTimeout(()=>location.href='result.html',1000);
   },1500);
 }
+</script>
+<script>
+fetch('../components/battle-navbar.html')
+  .then(response => response.text())
+  .then(html => {
+    document.getElementById('navbar-container').innerHTML = html;
+  })
+  .catch(() => {
+    console.warn('battle-navbar.html을 불러오지 못했습니다.');
+  });
 </script>
 </body>
 </html>
