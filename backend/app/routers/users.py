@@ -21,7 +21,7 @@ async def get_online_users(
 ):
     return await UserRepository.get_online_users(db)
 
-@router.get("/history", response_model=list[BattleRead])
+@router.get("/me/stats", response_model=list[BattleRead])
 async def get_battle_history(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
