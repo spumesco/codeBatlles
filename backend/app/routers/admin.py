@@ -23,11 +23,10 @@ class DashboardStats(BaseModel):
     total_submissions: int
 
 class UserAdminRead(UserRead):
-    """Extends UserRead with the admin-only is_active flag already present in UserRead."""
     pass
 
 class RoleUpdate(BaseModel):
-    role: str   # "user" | "admin"
+    role: str
 
 class ActiveUpdate(BaseModel):
     is_active: bool
@@ -53,7 +52,6 @@ async def get_dashboard_stats(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """Return aggregate platform statistics (admin only)."""
     total_users = (await db.execute(select(func.count()).select_from(User))).scalar_one()
     online_users = (
         await db.execute(select(func.count()).select_from(User).where(User.is_online == True))
@@ -80,7 +78,6 @@ async def list_all_users(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """Return every user account regardless of active status (admin only)."""
     result = await db.execute(select(User).order_by(User.id.asc()))
     return result.scalars().all()
 
@@ -90,7 +87,6 @@ async def get_user(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """Return a single user by user_id string (admin only)."""
     user = await UserRepository.get_user_by_user_id(db, user_id)
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
@@ -103,7 +99,6 @@ async def update_user_role(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """Promote or demote a user's role (admin only)."""
     _VALID_ROLES = {"user", "admin"}
     if body.role not in _VALID_ROLES:
         raise HTTPException(
@@ -123,7 +118,6 @@ async def update_user_active(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """Activate or deactivate (ban) a user account (admin only)."""
     user = await UserRepository.get_user_by_user_id(db, user_id)
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
@@ -135,7 +129,6 @@ async def list_all_problems(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """Return all problems including soft-deleted ones (admin only)."""
     result = await db.execute(select(Problem).order_by(Problem.id.asc()))
     return result.scalars().all()
 
@@ -145,7 +138,6 @@ async def restore_problem(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """Restore a soft-deleted problem (admin only)."""
     result = await db.execute(select(Problem).where(Problem.id == problem_id))
     problem = result.scalar_one_or_none()
     if not problem:
@@ -166,7 +158,6 @@ async def admin_delete_problem(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """Soft-delete a problem (admin only). Alias kept for admin-panel convenience."""
     problem = await ProblemRepository.get_problem(db, problem_id)
     if not problem:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="문제를 찾을 수 없습니다.")
