@@ -1,72 +1,107 @@
 from datetime import datetime
-from sqlalchemy.orm import Session
-from models import Battle, BattleRequest, MatchQueue, User
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.battle import Battle
+from app.models.battle_request import BattleRequest
+from app.models.match_queue import MatchQueue
 
 
 class BattleRepository:
-    # 1. 매칭 대기열 등록
     @staticmethod
-    def join_match_queue(db: Session, user_pk: int) -> MatchQueue:
+    async def join_match_queue(db: AsyncSession, user_pk: int) -> MatchQueue:
         entry = MatchQueue(user_id=user_pk, status="waiting")
         db.add(entry)
-        db.commit()
+        await db.commit()
+        await db.refresh(entry)
         return entry
 
-    # 2. 1대1 배틀 방 생성
     @staticmethod
-    def create_battle(db: Session, player1_id: int, player2_id: int, problem_id: int) -> Battle:
-        new_battle = Battle(
-            player1_id=player1_id,
-            player2_id=player2_id,
-            problem_id=problem_id,
-            status="ready"
+    async def get_queue_entry(db: AsyncSession, user_pk: int) -> MatchQueue | None:
+        result = await db.execute(
+            select(MatchQueue).where(MatchQueue.user_id == user_pk, MatchQueue.status == "waiting")
         )
-        db.add(new_battle)
+        return result.scalar_one_or_none()
 
-        # 플레이어들의 상태를 '배틀 중'으로 변경
-        p1 = db.query(User).filter(User.id == player1_id).first()
-        p2 = db.query(User).filter(User.id == player2_id).first()
-        if p1: p1.is_battling = True
-        if p2: p2.is_battling = True
-
-        db.commit()
-        db.refresh(new_battle)
-        return new_battle
-
-    # 3. 배틀 시작 처리 (시간 기록)
     @staticmethod
-    def start_battle(db: Session, battle_id: int):
-        battle = db.query(Battle).filter(Battle.id == battle_id).first()
-        if battle:
-            battle.status = "playing"
-            battle.started_at = datetime.utcnow()
-            db.commit()
+    async def remove_from_queue(db: AsyncSession, user_pk: int) -> None:
+        await db.execute(
+            update(MatchQueue).where(MatchQueue.user_id == user_pk).values(status="cancelled")
+        )
+        await db.commit()
+
+    @staticmethod
+    async def find_match(db: AsyncSession, user_pk: int) -> MatchQueue | None:
+        result = await db.execute(
+            select(MatchQueue).where(
+                MatchQueue.user_id != user_pk,
+                MatchQueue.status == "waiting",
+            ).order_by(MatchQueue.created_at.asc()).limit(1)
+        )
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def create_battle(db: AsyncSession, player1_id: int, player2_id: int, problem_id: int) -> Battle:
+        battle = Battle(player1_id=player1_id, player2_id=player2_id, problem_id=problem_id, status="ready")
+        db.add(battle)
+        await db.commit()
+        await db.refresh(battle)
         return battle
 
-    # 4. 배틀 종료 및 승자 기록 (전적 업데이트)
     @staticmethod
-    def finish_battle(db: Session, battle_id: int, winner_id: int | None = None):
-        battle = db.query(Battle).filter(Battle.id == battle_id).first()
-        if not battle:
-            return None
+    async def get_battle(db: AsyncSession, battle_id: int) -> Battle | None:
+        result = await db.execute(select(Battle).where(Battle.id == battle_id))
+        return result.scalar_one_or_none()
 
-        battle.status = "finished"
-        battle.finished_at = datetime.utcnow()
-        battle.winner_id = winner_id
+    @staticmethod
+    async def get_battles_by_user(db: AsyncSession, user_pk: int) -> list[Battle]:
+        result = await db.execute(
+            select(Battle).where(
+                (Battle.player1_id == user_pk) | (Battle.player2_id == user_pk)
+            ).order_by(Battle.id.desc())
+        )
+        return result.scalars().all()
 
-        # 승패 카운트 올려주기
-        p1 = db.query(User).filter(User.id == battle.player1_id).first()
-        p2 = db.query(User).filter(User.id == battle.player2_id).first()
+    @staticmethod
+    async def start_battle(db: AsyncSession, battle_id: int) -> None:
+        await db.execute(
+            update(Battle).where(Battle.id == battle_id).values(
+                status="running", started_at=datetime.utcnow()
+            )
+        )
+        await db.commit()
 
-        if p1: p1.is_battling = False
-        if p2: p2.is_battling = False
+    @staticmethod
+    async def finish_battle(db: AsyncSession, battle_id: int, winner_id: int) -> Battle | None:
+        await db.execute(
+            update(Battle).where(Battle.id == battle_id).values(
+                status="finished",
+                winner_id=winner_id,
+                finished_at=datetime.utcnow(),
+            )
+        )
+        await db.commit()
+        result = await db.execute(select(Battle).where(Battle.id == battle_id))
+        return result.scalar_one_or_none()
 
-        if winner_id == battle.player1_id:
-            if p1: p1.win_count += 1
-            if p2: p2.lose_count += 1
-        elif winner_id == battle.player2_id:
-            if p2: p2.win_count += 1
-            if p1: p1.lose_count += 1
+    @staticmethod
+    async def create_battle_request(db: AsyncSession, requester_id: int, receiver_id: int) -> BattleRequest:
+        req = BattleRequest(requester_id=requester_id, receiver_id=receiver_id, status="pending")
+        db.add(req)
+        await db.commit()
+        await db.refresh(req)
+        return req
 
-        db.commit()
-        return battle
+    @staticmethod
+    async def get_battle_request(db: AsyncSession, request_id: int) -> BattleRequest | None:
+        result = await db.execute(select(BattleRequest).where(BattleRequest.id == request_id))
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def update_battle_request_status(db: AsyncSession, request_id: int, status: str) -> None:
+        await db.execute(
+            update(BattleRequest).where(BattleRequest.id == request_id).values(
+                status=status, responded_at=datetime.utcnow()
+            )
+        )
+        await db.commit()

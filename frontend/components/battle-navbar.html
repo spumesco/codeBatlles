@@ -1,0 +1,21 @@
+<header class="bg-surface sticky top-0 z-50 border-b border-outline-variant flex-shrink-0">
+  <div class="flex justify-between items-center h-16 w-full max-w-container-max mx-auto px-gutter gap-lg">
+    <div class="flex items-center gap-xl min-w-0">
+      <a class="font-display text-h2 font-bold text-primary tracking-tight" href="/">CodeBattles</a>
+      <div class="hidden lg:flex items-center gap-md min-w-0">
+        <span class="font-body-md text-body-md font-bold text-on-surface">나 철몽</span>
+        <span class="font-code-md text-sm text-green-600">3승</span>
+        <span class="font-code-md text-sm text-red-600">2패</span>
+        <span class="text-outline font-bold mx-sm">VS</span>
+        <span class="font-body-md text-body-md font-bold text-on-surface">상대: 김건한</span>
+        <span class="font-code-md text-sm text-green-600">5승</span>
+        <span class="font-code-md text-sm text-red-600">1패</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-lg flex-shrink-0">
+      <span class="hidden sm:inline font-body-md text-body-md text-secondary">상태: <strong class="text-green-600">진행 중</strong></span>
+      <span class="timer" id="timer">00:00</span>
+      <button id="toggleDrawer" onclick="toggleDrawer()" class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:border-primary hover:text-primary transition-all">문제 보기</button>
+    </div>
+  </div>
+</header>

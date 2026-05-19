@@ -1,0 +1,86 @@
+/* ===== result.html CSS ===== */
+
+.result-wrap {
+  max-width: 700px;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+}
+
+.result-banner {
+  text-align: center;
+  padding: 2.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  border: 2px solid #16a34a;
+  background: linear-gradient(135deg, #f0fdf4, #fcf9f8);
+  animation: fadeIn 0.5s ease;
+}
+
+.result-banner.lose {
+  border-color: #dc2626;
+  background: linear-gradient(135deg, #fff1f2, #fcf9f8);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #c1c6d7;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 12px;
+  color: #717786;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.info-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.info-label {
+  color: #717786;
+  min-width: 80px;
+}
+
+.submit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.submit-box {
+  background: #f6f3f2;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.submit-box h6 {
+  font-size: 0.75rem;
+  color: #717786;
+  text-transform: uppercase;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.submit-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.submit-label { color: #717786; }
