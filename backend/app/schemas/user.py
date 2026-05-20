@@ -17,7 +17,6 @@ class UserRead(BaseModel):
 
 
 class UserSummary(BaseModel):
-    """공개 프로필 (리더보드, 온라인 목록 등)"""
     user_id: str
     nickname: str
     win_count: int
@@ -27,6 +26,4 @@ class UserSummary(BaseModel):
 
     model_config = {"from_attributes": True}
 
-
-# 하위 호환용 alias
 UserPublic = UserSummary

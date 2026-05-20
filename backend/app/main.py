@@ -10,7 +10,6 @@ from app.database import engine, Base
 
 
 import app.models.user
-import app.models.user_session
 import app.models.problem
 import app.models.test_case 
 import app.models.match_queue
