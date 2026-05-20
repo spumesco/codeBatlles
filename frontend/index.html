@@ -15,50 +15,22 @@
           "surface-dim": "#dcd9d9",
           "primary-container": "#0070eb",
           "primary": "#0058bc",
-          "on-tertiary-fixed": "#07006c",
           "outline-variant": "#c1c6d7",
           "error": "#ba1a1a",
           "secondary": "#5e5e5e",
           "inverse-primary": "#adc6ff",
           "on-surface-variant": "#414755",
-          "on-secondary-fixed-variant": "#474747",
           "on-primary": "#ffffff",
-          "tertiary-container": "#6063ee",
           "tertiary": "#4648d4",
-          "on-secondary-container": "#646464",
           "surface": "#fcf9f8",
-          "secondary-fixed-dim": "#c6c6c6",
-          "on-tertiary": "#ffffff",
-          "on-secondary-fixed": "#1b1b1b",
-          "on-error-container": "#93000a",
-          "surface-container-lowest": "#ffffff",
-          "tertiary-fixed-dim": "#c0c1ff",
-          "on-tertiary-container": "#fffbff",
           "on-surface": "#1c1b1b",
-          "surface-variant": "#e5e2e1",
-          "secondary-fixed": "#e2e2e2",
-          "on-primary-fixed": "#001a41",
-          "surface-container-high": "#ebe7e7",
-          "on-background": "#1c1b1b",
-          "secondary-container": "#e2e2e2",
-          "inverse-on-surface": "#f3f0ef",
-          "on-primary-fixed-variant": "#004493",
-          "on-primary-container": "#fefcff",
           "surface-container-low": "#f6f3f2",
-          "surface-tint": "#005bc1",
-          "inverse-surface": "#313030",
-          "surface-container-highest": "#e5e2e1",
-          "surface-bright": "#fcf9f8",
+          "surface-container-lowest": "#ffffff",
           "primary-fixed": "#d8e2ff",
           "on-secondary": "#ffffff",
           "outline": "#717786",
-          "primary-fixed-dim": "#adc6ff",
-          "on-error": "#ffffff",
-          "error-container": "#ffdad6",
-          "on-tertiary-fixed-variant": "#2f2ebe",
           "background": "#fcf9f8",
-          "surface-container": "#f0edec",
-          "tertiary-fixed": "#e1e0ff"
+          "surface-container": "#f0edec"
         },
         "borderRadius": {
           "DEFAULT": "0.125rem",
@@ -67,25 +39,16 @@
           "full": "0.75rem"
         },
         "spacing": {
-          "base": "4px",
-          "sm": "8px",
-          "md": "16px",
-          "container-max": "1280px",
-          "lg": "24px",
-          "xl": "48px",
-          "xs": "4px",
-          "gutter": "20px"
+          "base": "4px", "sm": "8px", "md": "16px",
+          "container-max": "1280px", "lg": "24px",
+          "xl": "48px", "xs": "4px", "gutter": "20px"
         },
         "fontFamily": {
           "code-md": ["JetBrains Mono"],
-          "body-sm": ["Space Grotesk"],
-          "body-md": ["Space Grotesk"],
-          "h1": ["Space Grotesk"],
-          "h2": ["Space Grotesk"],
-          "display": ["Space Grotesk"],
-          "body-lg": ["Space Grotesk"],
-          "label-md": ["Space Grotesk"],
-          "h3": ["Space Grotesk"]
+          "body-sm": ["Space Grotesk"], "body-md": ["Space Grotesk"],
+          "h1": ["Space Grotesk"], "h2": ["Space Grotesk"],
+          "display": ["Space Grotesk"], "body-lg": ["Space Grotesk"],
+          "label-md": ["Space Grotesk"], "h3": ["Space Grotesk"]
         },
         "fontSize": {
           "code-md": ["14px", {"lineHeight": "1.7", "fontWeight": "400"}],
@@ -98,96 +61,265 @@
           "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
           "h3": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}]
         }
-      },
-    },
+      }
+    }
   }
 </script>
-<link href="css/style.css" rel="stylesheet"/>
+<style>
+  /* ── 공통 ── */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  body { background-color: #fcf9f8; margin: 0; padding: 0; }
+
+  /* ── 네비게이션 ── */
+  .nav-divider {
+    width: 1px; height: 20px;
+    background-color: #c1c6d7;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 4px;
+  }
+
+  /* ── 히어로 배경 그리드 ── */
+  .hero-grid {
+    background-image:
+      linear-gradient(rgba(0,88,188,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,88,188,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* ── 커서 깜빡임 ── */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+  .cursor-blink {
+    display: inline-block;
+    width: 2px; height: 1.1em;
+    background: #adc6ff;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  /* ── 타이머 카운트업 ── */
+  #battle-timer { font-variant-numeric: tabular-nums; }
+</style>
 </head>
 <body class="bg-surface font-body-md text-on-surface">
 
-  <!-- 네비게이션 바가 삽입될 자리 -->
-  <div id="navbar-container"></div>
+<!-- 네비게이션 바 -->
+<div id="navbar-container"></div>
 
-  <main class="bg-surface">
+<!-- ══════════════════════════════════
+     메인
+══════════════════════════════════ -->
+<main class="bg-surface">
 
-    <!-- 히어로 섹션 -->
-    <section class="relative flex flex-col items-center justify-center text-center py-32 px-5 overflow-hidden">
-      <div class="absolute top-[-80px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary opacity-5 blur-3xl pointer-events-none"></div>
+  <!-- ── 히어로 섹션 ── -->
+  <section class="relative overflow-hidden bg-surface hero-grid" style="min-height: 92vh;">
 
-      <div class="relative mb-6">
-        <span class="font-code-md text-label-md text-primary uppercase tracking-widest mb-4 block">1:1 코드 배틀 플랫폼</span>
-        <h1 class="font-display text-display text-on-surface leading-tight">
+    <!-- 배경 장식 -->
+    <div class="absolute top-[-120px] left-[-100px] w-[500px] h-[500px] rounded-full pointer-events-none"
+         style="background: radial-gradient(circle, rgba(0,88,188,0.10) 0%, transparent 70%);"></div>
+    <div class="absolute bottom-[-80px] right-[-80px] w-[420px] h-[420px] rounded-full pointer-events-none"
+         style="background: radial-gradient(circle, rgba(70,72,212,0.08) 0%, transparent 70%);"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full pointer-events-none"
+         style="background: radial-gradient(circle, rgba(0,88,188,0.04) 0%, transparent 65%);"></div>
+
+    <!-- 좌우 레이아웃 -->
+    <div class="relative max-w-[1280px] mx-auto px-5 flex flex-col lg:flex-row items-center justify-between gap-12"
+         style="min-height: 92vh;">
+
+      <!-- 왼쪽: 텍스트 -->
+      <div class="flex-1 flex flex-col items-start text-left pt-24 pb-16 lg:py-0 max-w-xl">
+        <span class="font-code-md text-label-md text-primary uppercase tracking-widest mb-5 block">1:1 코드 배틀 플랫폼</span>
+        <h1 class="font-display text-display text-on-surface leading-tight mb-4">
           Code<span class="text-primary">Battles</span>
         </h1>
-        <div class="mx-auto mt-3 h-1 w-24 rounded-full bg-primary opacity-60"></div>
-      </div>
+        <p class="font-body-lg text-body-lg text-secondary mb-2">
+          실시간으로 상대와 코드를 겨루는 1:1 코드 배틀 플랫폼
+        </p>
+        <p class="font-body-md text-body-md text-on-surface-variant mb-10">
+          문제를 풀고, 제출하고, 먼저 정답을 맞히면 승리합니다.
+        </p>
 
-      <p class="font-body-lg text-body-lg text-secondary max-w-xl mb-3">
-        실시간으로 상대와 코드를 겨루는 1:1 코드 배틀 플랫폼
-      </p>
-      <p class="font-body-md text-body-md text-on-surface-variant max-w-lg mb-12">
-        문제를 풀고, 제출하고, 먼저 정답을 맞히면 승리합니다.
-      </p>
+        <!-- CTA 버튼 -->
+        <div class="flex items-center gap-md">
+          <button id="btn-start"
+            class="font-body-md text-body-md px-lg py-md bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-container active:scale-95 transition-all shadow-md hover:shadow-lg">
+            배틀 시작하기
+          </button>
+          <button id="btn-register"
+            class="font-body-md text-body-md px-lg py-md border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary-fixed active:scale-95 transition-all">
+            회원가입
+          </button>
+        </div>
 
-      <div class="flex items-center gap-md">
-        <button onclick="location.href='/main'" class="font-body-md text-body-md px-lg py-md bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-container active:scale-95 transition-all shadow-md hover:shadow-lg">
-          배틀 시작하기
-        </button>
-        <button onclick="location.href='/register'" class="font-body-md text-body-md px-lg py-md border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary-fixed active:scale-95 transition-all">
-          회원가입
-        </button>
-      </div>
-    </section>
-
-    <!-- 구분선 -->
-    <div class="border-t border-outline-variant"></div>
-
-    <!-- 기능 소개 섹션 -->
-    <section class="py-12 px-5 bg-surface-container-low">
-      <div class="max-w-[1280px] mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
-            <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
-              <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">bolt</span>
-            </div>
-            <h3 class="font-h3 text-h3 text-on-surface mb-2">실시간 매칭</h3>
-            <p class="font-body-sm text-body-sm text-secondary">온라인 사용자와 즉시 매칭되어 바로 배틀을 시작할 수 있습니다.</p>
+        <!-- 스탯 -->
+        <div class="flex items-center gap-lg mt-12">
+          <div>
+            <p class="font-h2 text-h2 text-primary font-bold">1:1</p>
+            <p class="font-body-sm text-body-sm text-secondary">실시간 대결</p>
           </div>
-
-          <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
-            <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
-              <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">code</span>
-            </div>
-            <h3 class="font-h3 text-h3 text-on-surface mb-2">라이브 코드 공유</h3>
-            <p class="font-body-sm text-body-sm text-secondary">상대방의 코드를 실시간으로 확인하며 전략적으로 대응하세요.</p>
+          <div class="w-px h-8 bg-outline-variant"></div>
+          <div>
+            <p class="font-h2 text-h2 text-primary font-bold">Judge0</p>
+            <p class="font-body-sm text-body-sm text-secondary">자동 채점</p>
           </div>
-
-          <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
-            <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
-              <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">check_circle</span>
-            </div>
-            <h3 class="font-h3 text-h3 text-on-surface mb-2">Judge0 채점</h3>
-            <p class="font-body-sm text-body-sm text-secondary">제출한 코드를 Judge0 엔진이 자동으로 채점해 즉시 결과를 알려드립니다.</p>
+          <div class="w-px h-8 bg-outline-variant"></div>
+          <div>
+            <p class="font-h2 text-h2 text-primary font-bold">Live</p>
+            <p class="font-body-sm text-body-sm text-secondary">코드 공유</p>
           </div>
-
         </div>
       </div>
-    </section>
 
-  </main>
+      <!-- 오른쪽: 코드 테마 일러스트 -->
+      <div class="flex-1 flex items-center justify-center pb-16 lg:py-0 w-full max-w-lg select-none">
+        <div class="relative w-full" style="aspect-ratio: 1 / 1; max-width: 480px;">
 
-  <script>
-    fetch('components/guest-navbar.html')
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById('navbar-container').innerHTML = html;
-      })
-      .catch(() => {
-        console.warn('guest-navbar.html을 불러오지 못했습니다.');
-      });
-  </script>
+          <!-- 중앙 육각형 -->
+          <svg class="absolute inset-0 w-full h-full" viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- 회전 링 -->
+            <circle cx="240" cy="240" r="190" stroke="#0058bc" stroke-width="1" stroke-dasharray="6 10" opacity="0.25"
+              style="transform-origin:240px 240px; animation: spin 30s linear infinite;"/>
+            <circle cx="240" cy="240" r="150" stroke="#4648d4" stroke-width="1" stroke-dasharray="3 14" opacity="0.18"
+              style="transform-origin:240px 240px; animation: spin 20s linear infinite reverse;"/>
+
+            <!-- 중앙 육각형 -->
+            <polygon points="240,100 315,142 315,226 240,268 165,226 165,142"
+              fill="#0058bc" fill-opacity="0.08" stroke="#0058bc" stroke-width="1.5" opacity="0.6"/>
+            <polygon points="240,120 305,157 305,231 240,268 175,231 175,157"
+              fill="#0058bc" fill-opacity="0.06" stroke="#adc6ff" stroke-width="0.8" opacity="0.4"/>
+
+            <!-- 중앙 < /> 심볼 -->
+            <text x="240" y="202" text-anchor="middle" font-family="JetBrains Mono, monospace"
+              font-size="36" font-weight="700" fill="#0058bc" opacity="0.9">&lt;/&gt;</text>
+
+            <!-- 띄엄 도트들 -->
+            <circle cx="240" cy="56"  r="5" fill="#0058bc" opacity="0.5"/>
+            <circle cx="374" cy="130" r="4" fill="#4648d4" opacity="0.4"/>
+            <circle cx="374" cy="350" r="5" fill="#0058bc" opacity="0.35"/>
+            <circle cx="240" cy="424" r="4" fill="#4648d4" opacity="0.4"/>
+            <circle cx="106" cy="350" r="5" fill="#0058bc" opacity="0.35"/>
+            <circle cx="106" cy="130" r="4" fill="#4648d4" opacity="0.4"/>
+
+            <!-- 코드 토큰 카드 6개 (육각형 꼭짓점 근처) -->
+            <!-- 상단 -->
+            <rect x="195" y="28" width="90" height="28" rx="6" fill="#0058bc" fill-opacity="0.12" stroke="#0058bc" stroke-width="1" opacity="0.7"/>
+            <text x="240" y="47" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#0058bc" font-weight="600">function</text>
+
+            <!-- 우상단 -->
+            <rect x="358" y="102" width="76" height="28" rx="6" fill="#4648d4" fill-opacity="0.10" stroke="#4648d4" stroke-width="1" opacity="0.7"/>
+            <text x="396" y="121" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#4648d4" font-weight="600">return</text>
+
+            <!-- 우하단 -->
+            <rect x="358" y="348" width="76" height="28" rx="6" fill="#0058bc" fill-opacity="0.10" stroke="#0058bc" stroke-width="1" opacity="0.7"/>
+            <text x="396" y="367" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#0058bc" font-weight="600">const</text>
+
+            <!-- 하단 -->
+            <rect x="195" y="422" width="90" height="28" rx="6" fill="#4648d4" fill-opacity="0.10" stroke="#4648d4" stroke-width="1" opacity="0.7"/>
+            <text x="240" y="441" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#4648d4" font-weight="600">if (n===0)</text>
+
+            <!-- 좌하단 -->
+            <rect x="46" y="348" width="76" height="28" rx="6" fill="#0058bc" fill-opacity="0.10" stroke="#0058bc" stroke-width="1" opacity="0.7"/>
+            <text x="84" y="367" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#0058bc" font-weight="600">for()</text>
+
+            <!-- 좌상단 -->
+            <rect x="46" y="102" width="76" height="28" rx="6" fill="#4648d4" fill-opacity="0.10" stroke="#4648d4" stroke-width="1" opacity="0.7"/>
+            <text x="84" y="121" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#4648d4" font-weight="600">import</text>
+
+            <!-- 연결선 (중심 → 각 카드) -->
+            <line x1="240" y1="100" x2="240" y2="56"  stroke="#0058bc" stroke-width="1" stroke-dasharray="3 4" opacity="0.3"/>
+            <line x1="315" y1="142" x2="374" y2="116" stroke="#4648d4" stroke-width="1" stroke-dasharray="3 4" opacity="0.3"/>
+            <line x1="315" y1="226" x2="374" y2="362" stroke="#0058bc" stroke-width="1" stroke-dasharray="3 4" opacity="0.3"/>
+            <line x1="240" y1="268" x2="240" y2="422" stroke="#4648d4" stroke-width="1" stroke-dasharray="3 4" opacity="0.3"/>
+            <line x1="165" y1="226" x2="106" y2="362" stroke="#0058bc" stroke-width="1" stroke-dasharray="3 4" opacity="0.3"/>
+            <line x1="165" y1="142" x2="106" y2="116" stroke="#4648d4" stroke-width="1" stroke-dasharray="3 4" opacity="0.3"/>
+
+            <!-- 작은 부유 사각형들 -->
+            <rect x="140" y="300" width="18" height="18" rx="3" fill="#0058bc" fill-opacity="0.15" stroke="#0058bc" stroke-width="1"
+              style="transform-origin:149px 309px; animation: floatA 4s ease-in-out infinite;"/>
+            <rect x="310" y="180" width="14" height="14" rx="3" fill="#4648d4" fill-opacity="0.15" stroke="#4648d4" stroke-width="1"
+              style="transform-origin:317px 187px; animation: floatB 5s ease-in-out infinite;"/>
+            <rect x="290" y="310" width="10" height="10" rx="2" fill="#0058bc" fill-opacity="0.2" stroke="#0058bc" stroke-width="1"
+              style="transform-origin:295px 315px; animation: floatA 6s ease-in-out infinite reverse;"/>
+            <rect x="160" y="170" width="12" height="12" rx="2" fill="#4648d4" fill-opacity="0.18" stroke="#4648d4" stroke-width="1"
+              style="transform-origin:166px 176px; animation: floatB 3.5s ease-in-out infinite;"/>
+
+          </svg>
+
+          <style>
+            @keyframes spin    { to { transform: rotate(360deg); } }
+            @keyframes floatA  { 0%,100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(8deg); } }
+            @keyframes floatB  { 0%,100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(8px) rotate(-6deg); } }
+          </style>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 구분선 -->
+  <div class="border-t border-outline-variant"></div>
+
+  <!-- ── 기능 소개 섹션 ── -->
+  <section class="py-12 px-5 bg-surface-container-low">
+    <div class="max-w-[1280px] mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
+          <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
+            <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">bolt</span>
+          </div>
+          <h3 class="font-h3 text-h3 text-on-surface mb-2">실시간 매칭</h3>
+          <p class="font-body-sm text-body-sm text-secondary">온라인 사용자와 즉시 매칭되어 바로 배틀을 시작할 수 있습니다.</p>
+        </div>
+
+        <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
+          <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
+            <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">code</span>
+          </div>
+          <h3 class="font-h3 text-h3 text-on-surface mb-2">라이브 코드 공유</h3>
+          <p class="font-body-sm text-body-sm text-secondary">상대방의 코드를 실시간으로 확인하며 전략적으로 대응하세요.</p>
+        </div>
+
+        <div class="bg-surface rounded-xl p-8 border border-outline-variant hover:border-primary hover:shadow-md transition-all group">
+          <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center mb-5 group-hover:bg-primary transition-colors">
+            <span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors" style="font-size:20px">check_circle</span>
+          </div>
+          <h3 class="font-h3 text-h3 text-on-surface mb-2">Judge0 채점</h3>
+          <p class="font-body-sm text-body-sm text-secondary">제출한 코드를 Judge0 엔진이 자동으로 채점해 즉시 결과를 알려드립니다.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════
+     JavaScript
+══════════════════════════════════ -->
+<script>
+  // ── 네비게이션 바 로드 ──
+  fetch('components/navbar.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('navbar-container').innerHTML = html;
+    });
+
+  // ── 페이지 이동 ──
+  document.getElementById('btn-start').addEventListener('click', () => {
+    window.location.href = 'pages/matching.html';
+  });
+
+  document.getElementById('btn-register').addEventListener('click', () => {
+    window.location.href = 'pages/register.html';
+  });
+</script>
 
 </body>
 </html>
