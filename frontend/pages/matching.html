@@ -25,31 +25,42 @@ body{background-color:#fcf9f8;margin:0;padding:0;}
 .dots span:nth-child(2){animation-delay:0.2s;}
 .dots span:nth-child(3){animation-delay:0.4s;}
 @keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
+.wait-card{background:#fff;border:1px solid #c1c6d7;border-radius:8px;padding:1.5rem 3rem;margin-bottom:2rem;}
 </style>
 </head>
 <body class="bg-surface font-body-md text-on-surface">
 
 <div id="navbar-container"></div>
 
-<!-- 매칭 대기 -->
 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 64px);text-align:center;padding:2rem;">
   <div class="spinner"></div>
-  <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;font-family:'Space Grotesk',sans-serif;">
+  <h2 id="wait-title" style="font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;font-family:'Space Grotesk',sans-serif;">
     매칭 검색 중<span class="dots" style="margin-left:6px"><span></span><span></span><span></span></span>
   </h2>
-  <p style="color:#717786;margin-bottom:2rem;">현재 접속 중인 사용자와 연결하고 있어요.</p>
+  <p id="wait-description" style="color:#717786;margin-bottom:2rem;">현재 접속 중인 사용자와 연결하고 있어요.</p>
 
-  <div style="background:#fff;border:1px solid #c1c6d7;border-radius:8px;padding:1.5rem 3rem;margin-bottom:2rem;">
-    <div style="font-size:0.75rem;color:#717786;font-family:'JetBrains Mono',monospace;margin-bottom:4px;">대기 시간</div>
+  <div class="wait-card">
+    <div id="timer-label" style="font-size:0.75rem;color:#717786;font-family:'JetBrains Mono',monospace;margin-bottom:4px;">대기 시간</div>
     <div id="timer" style="font-family:'JetBrains Mono',monospace;font-size:2.5rem;font-weight:700;color:#0058bc;letter-spacing:0.05em;">00:00</div>
   </div>
 
-  <button onclick="location.href='main.html'" class="px-md py-sm border border-outline-variant text-secondary rounded-lg font-body-md hover:text-red-500 hover:border-red-400 transition-all">
+  <a id="cancel-link" href="/main" class="px-md py-sm border border-outline-variant text-secondary rounded-lg font-body-md hover:text-red-500 hover:border-red-400 transition-all">
     매칭 취소
-  </button>
+  </a>
 </div>
 
 <script>
+const params = new URLSearchParams(window.location.search);
+const mode = params.get('mode');
+const opponent = params.get('opponent') || '상대 사용자';
+
+if (mode === 'request') {
+  document.getElementById('wait-title').innerHTML = '배틀 신청 중<span class="dots" style="margin-left:6px"><span></span><span></span><span></span></span>';
+  document.getElementById('wait-description').textContent = `${opponent}님에게 배틀 신청을 보내고 수락을 기다리는 중입니다.`;
+  document.getElementById('timer-label').textContent = '신청 대기 시간';
+  document.getElementById('cancel-link').textContent = '신청 취소';
+}
+
 let sec=0;
 setInterval(()=>{
   sec++;
@@ -59,7 +70,7 @@ setInterval(()=>{
 },1000);
 </script>
 <script>
-fetch('../components/user-navbar.html')
+fetch('/components/user-navbar.html?v=' + Date.now(), { cache: 'no-store' })
   .then(response => response.text())
   .then(html => {
     document.getElementById('navbar-container').innerHTML = html;

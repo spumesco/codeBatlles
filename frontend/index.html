@@ -305,7 +305,7 @@
 ══════════════════════════════════ -->
 <script>
   // ── 네비게이션 바 로드 ──
-  fetch('components/navbar.html')
+  fetch('components/guest-navbar.html')
     .then(res => res.text())
     .then(html => {
       document.getElementById('navbar-container').innerHTML = html;
@@ -313,11 +313,11 @@
 
   // ── 페이지 이동 ──
   document.getElementById('btn-start').addEventListener('click', () => {
-    window.location.href = 'pages/matching.html';
+    window.location.href = '/main';
   });
 
   document.getElementById('btn-register').addEventListener('click', () => {
-    window.location.href = 'pages/register.html';
+    window.location.href = '/register';
   });
 </script>
 

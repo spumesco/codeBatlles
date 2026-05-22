@@ -36,7 +36,10 @@ body{background-color:#fcf9f8;margin:0;padding:0;}
 .info-row:last-child{border-bottom:none;}
 .info-label{color:#5e5e5e;}
 .info-value{font-family:'JetBrains Mono',monospace;font-weight:700;}
-.request-box{background:#f0f4ff;border:1px solid #0058bc;border-radius:8px;padding:1rem;margin-bottom:0.8rem;display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;}
+.request-box{background:#f0f4ff;border:1px solid #0058bc;border-radius:8px;padding:1rem;margin-bottom:0.8rem;display:flex;justify-content:space-between;align-items:center;gap:0.75rem;font-size:0.9rem;}
+.request-text{line-height:1.45;}
+.request-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.request-actions button{width:72px;height:30px;display:inline-flex;align-items:center;justify-content:center;padding:0;}
 .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
 .match-box{background:#f6f3f2;border:1px solid #c1c6d7;border-radius:8px;padding:1.2rem;}
 .match-box h6{font-size:0.8rem;color:#5e5e5e;margin-bottom:0.8rem;font-weight:600;}
@@ -68,8 +71,8 @@ tr:last-child td{border-bottom:none;}
     <div class="card">
       <div class="card-title">최근 배틀 요청</div>
       <div class="request-box">
-        <span><strong style="color:#0058bc">김건한</strong>님이 배틀을 신청했습니다.</span>
-        <div style="display:flex;gap:6px">
+        <span class="request-text"><strong style="color:#0058bc">김건한</strong>님이 배틀을 신청했습니다.</span>
+        <div class="request-actions">
           <button class="px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all">수락</button>
           <button class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:text-red-500 transition-all">거절</button>
         </div>
@@ -86,14 +89,14 @@ tr:last-child td{border-bottom:none;}
         <div class="match-box">
           <h6>자동 매칭</h6>
           <p>현재 접속 중인 사용자와 자동으로 매칭됩니다.</p>
-          <button onclick="location.href='matching.html'" class="w-full px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all" style="margin-bottom:8px">자동 매칭 시작</button>
+          <a href="/matching" class="block w-full px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm text-center hover:bg-primary-container transition-all" style="margin-bottom:8px">자동 매칭 시작</a>
           <button class="w-full px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:border-primary hover:text-primary transition-all">매칭 취소</button>
         </div>
         <div class="match-box">
           <h6>특정 사용자와 배틀</h6>
           <p>상대방 닉네임을 입력하고 배틀을 신청하세요.</p>
-          <input class="input-nick" type="text" placeholder="상대 닉네임 입력"/>
-          <button class="w-full px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all">배틀 신청</button>
+          <input id="opponent-nickname" class="input-nick" type="text" placeholder="상대 닉네임 입력"/>
+          <button id="btn-request-battle" class="w-full px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all">배틀 신청</button>
         </div>
       </div>
     </div>
@@ -105,7 +108,7 @@ tr:last-child td{border-bottom:none;}
           <tr>
             <td>김건한</td><td style="font-family:monospace;color:#717786">user02</td>
             <td><span style="color:#16a34a;font-size:0.85rem">● 대기 중</span></td>
-            <td><button class="px-sm py-1 border border-outline-variant text-secondary rounded text-xs hover:border-primary hover:text-primary transition-all">배틀 신청</button></td>
+            <td><button class="btn-request-user px-sm py-1 border border-outline-variant text-secondary rounded text-xs hover:border-primary hover:text-primary transition-all" data-opponent="김건한">배틀 신청</button></td>
           </tr>
           <tr>
             <td>조하은</td><td style="font-family:monospace;color:#717786">user03</td>
@@ -123,7 +126,7 @@ tr:last-child td{border-bottom:none;}
   </div>
 </div>
 <script>
-fetch('../components/user-navbar.html')
+fetch('/components/user-navbar.html?v=' + Date.now(), { cache: 'no-store' })
   .then(response => response.text())
   .then(html => {
     document.getElementById('navbar-container').innerHTML = html;
@@ -131,6 +134,26 @@ fetch('../components/user-navbar.html')
   .catch(() => {
     console.warn('user-navbar.html을 불러오지 못했습니다.');
   });
+</script>
+<script>
+const requestButton = document.getElementById('btn-request-battle');
+const opponentInput = document.getElementById('opponent-nickname');
+
+function goBattleRequest(opponent) {
+  const target = (opponent || '상대 사용자').trim() || '상대 사용자';
+  window.location.href = `/matching?mode=request&opponent=${encodeURIComponent(target)}`;
+}
+
+if (requestButton && opponentInput) {
+  requestButton.addEventListener('click', () => goBattleRequest(opponentInput.value));
+  opponentInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') goBattleRequest(opponentInput.value);
+  });
+}
+
+document.querySelectorAll('.btn-request-user').forEach(button => {
+  button.addEventListener('click', () => goBattleRequest(button.dataset.opponent));
+});
 </script>
 </body>
 </html>

@@ -227,6 +227,7 @@
       <thead>
         <tr class="border-b border-outline-variant" style="background:#f0edec;">
           <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">결과</th>
+          <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">경기 ID</th>
           <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">문제</th>
           <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">상대</th>
           <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">소요 시간</th>
@@ -254,24 +255,24 @@
 
 <script>
   // ── 네비게이션 바 로드 ──
-  fetch('../components/navbar.html')
+  fetch('../components/guest-navbar.html')
     .then(res => res.text())
     .then(html => { document.getElementById('navbar-container').innerHTML = html; });
 
   // ── 더미 데이터 ──
   const ALL_RECORDS = [
-    { result:'win',  problem:'두 수의 합',      opponent:'devKing',   time:'04:32', submit:2, date:'2025-05-18' },
-    { result:'lose', problem:'팰린드롬',          opponent:'codeWolf',  time:'07:11', submit:4, date:'2025-05-17' },
-    { result:'win',  problem:'피보나치',          opponent:'algo_pro',  time:'03:05', submit:1, date:'2025-05-15' },
-    { result:'win',  problem:'BFS 탐색',          opponent:'byte_king', time:'09:47', submit:3, date:'2025-05-13' },
-    { result:'lose', problem:'동적 프로그래밍',   opponent:'devKing',   time:'12:30', submit:6, date:'2025-05-11' },
-    { result:'win',  problem:'두 수의 합',        opponent:'night_owl', time:'02:58', submit:1, date:'2025-05-09' },
-    { result:'lose', problem:'팰린드롬',          opponent:'algo_pro',  time:'08:22', submit:5, date:'2025-05-07' },
-    { result:'win',  problem:'피보나치',          opponent:'codeWolf',  time:'05:14', submit:2, date:'2025-05-05' },
-    { result:'win',  problem:'BFS 탐색',          opponent:'byte_king', time:'06:39', submit:2, date:'2025-05-03' },
-    { result:'lose', problem:'두 수의 합',        opponent:'night_owl', time:'10:05', submit:7, date:'2025-05-01' },
-    { result:'win',  problem:'동적 프로그래밍',   opponent:'devKing',   time:'11:20', submit:3, date:'2025-04-28' },
-    { result:'lose', problem:'BFS 탐색',          opponent:'codeWolf',  time:'14:55', submit:8, date:'2025-04-25' },
+    { battleId:1012, result:'win',  problem:'두 수의 합',      opponent:'devKing',   time:'04:32', submit:2, date:'2025-05-18' },
+    { battleId:1011, result:'lose', problem:'팰린드롬',          opponent:'codeWolf',  time:'07:11', submit:4, date:'2025-05-17' },
+    { battleId:1010, result:'win',  problem:'피보나치',          opponent:'algo_pro',  time:'03:05', submit:1, date:'2025-05-15' },
+    { battleId:1009, result:'win',  problem:'BFS 탐색',          opponent:'byte_king', time:'09:47', submit:3, date:'2025-05-13' },
+    { battleId:1008, result:'lose', problem:'동적 프로그래밍',   opponent:'devKing',   time:'12:30', submit:6, date:'2025-05-11' },
+    { battleId:1007, result:'win',  problem:'두 수의 합',        opponent:'night_owl', time:'02:58', submit:1, date:'2025-05-09' },
+    { battleId:1006, result:'lose', problem:'팰린드롬',          opponent:'algo_pro',  time:'08:22', submit:5, date:'2025-05-07' },
+    { battleId:1005, result:'win',  problem:'피보나치',          opponent:'codeWolf',  time:'05:14', submit:2, date:'2025-05-05' },
+    { battleId:1004, result:'win',  problem:'BFS 탐색',          opponent:'byte_king', time:'06:39', submit:2, date:'2025-05-03' },
+    { battleId:1003, result:'lose', problem:'두 수의 합',        opponent:'night_owl', time:'10:05', submit:7, date:'2025-05-01' },
+    { battleId:1002, result:'win',  problem:'동적 프로그래밍',   opponent:'devKing',   time:'11:20', submit:3, date:'2025-04-28' },
+    { battleId:1001, result:'lose', problem:'BFS 탐색',          opponent:'codeWolf',  time:'14:55', submit:8, date:'2025-04-25' },
   ];
 
   const PAGE_SIZE = 8;
@@ -327,6 +328,7 @@
             ${isWin ? '승리' : '패배'}
           </span>
         </td>
+        <td class="px-5 py-4 font-code-md text-body-sm text-primary font-bold">#${r.battleId}</td>
         <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface font-medium">${r.problem}</td>
         <td class="px-5 py-4 font-code-md text-body-sm text-secondary">${r.opponent}</td>
         <td class="px-5 py-4 font-code-md text-body-sm text-on-surface">${r.time}</td>
