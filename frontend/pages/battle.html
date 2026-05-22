@@ -28,6 +28,10 @@ body{background-color:#fcf9f8;font-family:'Space Grotesk',sans-serif;height:100v
 .section-label{font-size:0.75rem;color:#717786;margin-top:1rem;margin-bottom:0.3rem;font-family:'JetBrains Mono',monospace;}
 .section-body{font-size:0.85rem;line-height:1.6;color:#414755;background:#f6f3f2;border-radius:6px;padding:0.7rem;}
 .code-example{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#0058bc;background:#f0f4ff;border-radius:6px;padding:0.7rem;}
+.problem-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin-bottom:1rem;}
+.meta-item{background:#f6f3f2;border:1px solid #e5e2e1;border-radius:6px;padding:0.65rem;}
+.meta-label{font-size:0.68rem;color:#717786;font-family:'JetBrains Mono',monospace;margin-bottom:0.2rem;}
+.meta-value{font-size:0.85rem;color:#1c1b1b;font-weight:700;}
 .editors{display:grid;grid-template-columns:1fr 1fr;width:100%;flex:1;overflow:hidden;}
 .editor-pane{display:flex;flex-direction:column;border-right:1px solid #c1c6d7;overflow:hidden;}
 .editor-pane:last-child{border-right:none;}
@@ -37,28 +41,53 @@ textarea.editor-body{resize:none;border:none;outline:none;color:#1c1b1b;width:10
 .editor-footer{background:#f6f3f2;border-top:1px solid #c1c6d7;padding:0.5rem 1rem;display:grid;grid-template-columns:120px 1fr 96px;gap:1rem;align-items:center;min-height:52px;font-size:0.8rem;flex-shrink:0;}
 .lang-select{background:#fff;border:1px solid #c1c6d7;color:#1c1b1b;padding:3px 10px;border-radius:4px;font-size:0.8rem;width:100%;height:32px;}
 .footer-center{justify-self:center;text-align:center;min-width:0;}.footer-action{justify-self:end;width:96px;}.submit-button{width:96px;height:32px;display:inline-flex;align-items:center;justify-content:center;}
+.countdown-backdrop{position:fixed;inset:0;background:rgba(28,27,27,0.45);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px);}
+.countdown-modal{width:min(320px,calc(100vw - 40px));background:#fff;border:1px solid #c1c6d7;border-radius:8px;padding:1.5rem;text-align:center;box-shadow:0 20px 50px rgba(28,27,27,0.2);}
+.countdown-label{font-size:0.8rem;color:#717786;margin-bottom:0.75rem;font-weight:700;}
+.countdown-number{font-family:'JetBrains Mono',monospace;font-size:4rem;line-height:1;color:#0058bc;font-weight:700;}
+.countdown-backdrop.hidden{display:none;}
 </style>
 </head>
 <body>
 
 <div id="navbar-container"></div>
+<div class="countdown-backdrop" id="countdownModal" role="dialog" aria-modal="true" aria-labelledby="countdownLabel">
+  <div class="countdown-modal">
+    <div class="countdown-label" id="countdownLabel">배틀 시작까지</div>
+    <div class="countdown-number" id="countdownNumber">5</div>
+  </div>
+</div>
 <div class="main-area">
   <!-- SIDE DRAWER -->
   <div class="drawer" id="drawer">
     <div class="drawer-inner">
       <button onclick="toggleDrawer()" class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:text-red-500 transition-all" style="margin-bottom:1rem">문제 닫기</button>
-      <div style="font-size:0.75rem;color:#717786;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.8rem">Side Drawer — 문제</div>
-      <div style="font-size:1rem;font-weight:700;margin-bottom:1rem;">A+B</div>
+      <div style="font-size:0.75rem;color:#717786;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.8rem">배틀 문제</div>
+      <div id="problemTitle" style="font-size:1rem;font-weight:700;margin-bottom:0.75rem;">A+B</div>
+      <div class="problem-meta">
+        <div class="meta-item">
+          <div class="meta-label">난이도</div>
+          <div class="meta-value" id="problemDifficulty">easy</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">시간 제한</div>
+          <div class="meta-value"><span id="problemTimeLimit">2</span>s</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">메모리 제한</div>
+          <div class="meta-value"><span id="problemMemoryLimit">128</span>MB</div>
+        </div>
+      </div>
       <div class="section-label">문제 설명</div>
-      <div class="section-body">두 정수 A와 B를 입력받아 합을 출력하시오.</div>
+      <div class="section-body" id="problemDescription">두 정수 A와 B를 입력받아 A+B를 출력하시오.</div>
       <div class="section-label">입력</div>
-      <div class="section-body">첫째 줄에 A와 B가 주어진다.</div>
+      <div class="section-body" id="problemInputDescription">첫째 줄에 두 정수 A와 B가 공백으로 구분되어 주어진다.</div>
       <div class="section-label">출력</div>
-      <div class="section-body">첫째 줄에 A+B를 출력한다.</div>
+      <div class="section-body" id="problemOutputDescription">첫째 줄에 A+B를 출력한다.</div>
       <div class="section-label">예제 입력</div>
-      <div class="code-example">1 2</div>
+      <div class="code-example" id="problemSampleInput">1 2</div>
       <div class="section-label">예제 출력</div>
-      <div class="code-example">3</div>
+      <div class="code-example" id="problemSampleOutput">3</div>
     </div>
   </div>
 
@@ -116,6 +145,51 @@ function submitCode(){
     setTimeout(()=>location.href='result.html',1000);
   },1500);
 }
+function startCountdown(){
+  const modal=document.getElementById('countdownModal');
+  const number=document.getElementById('countdownNumber');
+  let count=5;
+  number.textContent=count;
+  const interval=setInterval(()=>{
+    count--;
+    if(count<=0){
+      clearInterval(interval);
+      modal.classList.add('hidden');
+      return;
+    }
+    number.textContent=count;
+  },1000);
+}
+function getBattleId(){
+  const params = new URLSearchParams(location.search);
+  return params.get('battle_id') || params.get('id') || localStorage.getItem('battle_id');
+}
+function renderProblem(problem){
+  if(!problem) return;
+  document.getElementById('problemTitle').textContent = problem.title || 'Untitled Problem';
+  document.getElementById('problemDifficulty').textContent = problem.difficulty || '-';
+  document.getElementById('problemTimeLimit').textContent = problem.time_limit ?? '-';
+  document.getElementById('problemMemoryLimit').textContent = problem.memory_limit ?? '-';
+  document.getElementById('problemDescription').textContent = problem.description || '-';
+  document.getElementById('problemInputDescription').textContent = problem.input_description || '-';
+  document.getElementById('problemOutputDescription').textContent = problem.output_description || '-';
+  document.getElementById('problemSampleInput').textContent = problem.sample_input || '-';
+  document.getElementById('problemSampleOutput').textContent = problem.sample_output || '-';
+}
+async function loadBattleProblem(){
+  const battleId = getBattleId();
+  if(!battleId) return;
+  try{
+    const response = await fetch(`/battles/${battleId}`, { credentials:'include' });
+    if(!response.ok) return;
+    const battle = await response.json();
+    renderProblem(battle.problem);
+  }catch(error){
+    console.warn('battle problem load failed', error);
+  }
+}
+startCountdown();
+loadBattleProblem();
 </script>
 <script>
 fetch('../components/battle-navbar.html')

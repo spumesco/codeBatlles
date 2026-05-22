@@ -1,0 +1,10 @@
+{
+  "title": "배열 합 구하기",
+  "description": "N개의 정수가 주어졌을 때 모든 정수의 합을 출력하시오.",
+  "input_description": "첫째 줄에 정수의 개수 N이 주어진다. 둘째 줄에 N개의 정수가 공백으로 구분되어 주어진다.",
+  "output_description": "주어진 N개의 정수의 합을 출력한다.",
+  "difficulty": "easy",
+  "time_limit": 2,
+  "memory_limit": 128,
+  "sample_cases": ["001", "002"]
+}

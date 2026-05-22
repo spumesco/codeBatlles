@@ -72,6 +72,21 @@ def result_page():
     return FileResponse(PAGES_DIR / "result.html")
 
 
+@app.get("/history")
+def history_page():
+    return FileResponse(PAGES_DIR / "history.html")
+
+
+@app.get("/ranking")
+def ranking_page():
+    return FileResponse(PAGES_DIR / "ranking.html")
+
+
+@app.get("/settings")
+def settings_page():
+    return FileResponse(PAGES_DIR / "settings.html")
+
+
 @app.get("/admin-problems")
 def admin_problems_page():
     return FileResponse(PAGES_DIR / "admin-problems.html")

@@ -1,0 +1,10 @@
+{
+  "title": "A+B",
+  "description": "두 정수 A와 B를 입력받아 A+B를 출력하시오.",
+  "input_description": "첫째 줄에 두 정수 A와 B가 공백으로 구분되어 주어진다.",
+  "output_description": "첫째 줄에 A+B를 출력한다.",
+  "difficulty": "easy",
+  "time_limit": 2,
+  "memory_limit": 128,
+  "sample_cases": ["001", "002"]
+}

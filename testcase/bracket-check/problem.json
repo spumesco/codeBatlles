@@ -1,0 +1,10 @@
+{
+  "title": "괄호 검사",
+  "description": "괄호 문자열이 올바른 괄호 문자열이면 YES, 아니면 NO를 출력하시오.",
+  "input_description": "첫째 줄에 '('와 ')'로만 이루어진 문자열 S가 주어진다.",
+  "output_description": "S가 올바른 괄호 문자열이면 YES, 아니면 NO를 출력한다.",
+  "difficulty": "medium",
+  "time_limit": 2,
+  "memory_limit": 128,
+  "sample_cases": ["001", "002"]
+}

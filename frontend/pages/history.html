@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "surface-dim": "#dcd9d9",
+          "primary-container": "#0070eb",
+          "primary": "#0058bc",
+          "outline-variant": "#c1c6d7",
+          "error": "#ba1a1a",
+          "secondary": "#5e5e5e",
+          "inverse-primary": "#adc6ff",
+          "on-surface-variant": "#414755",
+          "on-primary": "#ffffff",
+          "tertiary": "#4648d4",
+          "surface": "#fcf9f8",
+          "on-surface": "#1c1b1b",
+          "surface-container-low": "#f6f3f2",
+          "surface-container-lowest": "#ffffff",
+          "primary-fixed": "#d8e2ff",
+          "on-secondary": "#ffffff",
+          "outline": "#717786",
+          "background": "#fcf9f8",
+          "surface-container": "#f0edec",
+          "surface-container-high": "#ebe7e7"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem", "lg": "0.25rem",
+          "xl": "0.5rem", "full": "0.75rem"
+        },
+        "spacing": {
+          "base": "4px", "sm": "8px", "md": "16px",
+          "container-max": "1280px", "lg": "24px",
+          "xl": "48px", "xs": "4px", "gutter": "20px"
+        },
+        "fontFamily": {
+          "code-md": ["JetBrains Mono"],
+          "body-sm": ["Space Grotesk"], "body-md": ["Space Grotesk"],
+          "h1": ["Space Grotesk"], "h2": ["Space Grotesk"],
+          "display": ["Space Grotesk"], "body-lg": ["Space Grotesk"],
+          "label-md": ["Space Grotesk"], "h3": ["Space Grotesk"]
+        },
+        "fontSize": {
+          "code-md": ["14px", {"lineHeight": "1.7", "fontWeight": "400"}],
+          "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+          "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+          "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+          "h2": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+          "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+          "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+          "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+          "h3": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  body { background-color: #fcf9f8; margin: 0; padding: 0; }
+
+  .nav-divider {
+    width: 1px; height: 20px;
+    background-color: #c1c6d7;
+    display: inline-block; vertical-align: middle; margin: 0 4px;
+  }
+
+  /* 필터 탭 */
+  .filter-tab {
+    padding: 6px 18px;
+    border-radius: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+    border: 1.5px solid #c1c6d7;
+    color: #5e5e5e; background: #fcf9f8;
+  }
+  .filter-tab:hover { border-color: #0058bc; color: #0058bc; }
+  .filter-tab.active {
+    background: #0058bc; color: #fff; border-color: #0058bc;
+  }
+
+  /* 테이블 행 hover */
+  .record-row { transition: background 0.12s; cursor: pointer; }
+  .record-row:hover { background: #f0edec; }
+
+  /* 승/패 배지 */
+  .badge-win  { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .badge-lose { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+  /* 상세보기 버튼 */
+  .btn-detail {
+    padding: 4px 12px; border-radius: 0.25rem;
+    font-size: 12px; font-weight: 600;
+    border: 1.5px solid #c1c6d7; color: #414755;
+    background: #fff; cursor: pointer; transition: all 0.12s;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .btn-detail:hover { border-color: #0058bc; color: #0058bc; }
+
+  /* 입력 공통 */
+  .filter-input {
+    border: 1.5px solid #c1c6d7; border-radius: 0.5rem;
+    padding: 7px 12px; font-size: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    color: #1c1b1b; background: #fff; outline: none;
+    transition: border-color 0.15s;
+  }
+  .filter-input:focus { border-color: #0058bc; }
+
+  /* 페이지네이션 */
+  .page-btn {
+    width: 32px; height: 32px; border-radius: 0.25rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1.5px solid #c1c6d7; color: #5e5e5e;
+    background: #fff; transition: all 0.12s;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .page-btn:hover { border-color: #0058bc; color: #0058bc; }
+  .page-btn.active { background: #0058bc; color: #fff; border-color: #0058bc; }
+</style>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+
+<!-- 네비게이션 바 -->
+<div id="navbar-container"></div>
+
+<main class="max-w-[1280px] mx-auto px-5 py-10">
+
+  <!-- 페이지 타이틀 -->
+  <div class="mb-8">
+    <h1 class="font-h1 text-h1 text-on-surface mb-1">기록</h1>
+    <p class="font-body-sm text-body-sm text-secondary">나의 코드 배틀 전적을 확인하세요.</p>
+  </div>
+
+  <!-- ── 상단 요약 ── -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col items-center">
+      <span class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-2">총 경기</span>
+      <span id="stat-total" class="font-display text-h1 text-on-surface font-bold">—</span>
+    </div>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col items-center">
+      <span class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-2">승</span>
+      <span id="stat-win" class="font-display text-h1 font-bold" style="color:#065f46;">—</span>
+    </div>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col items-center">
+      <span class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-2">패</span>
+      <span id="stat-lose" class="font-display text-h1 font-bold" style="color:#991b1b;">—</span>
+    </div>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col items-center">
+      <span class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-2">승률</span>
+      <span id="stat-rate" class="font-display text-h1 text-primary font-bold">—</span>
+    </div>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col items-center col-span-2 md:col-span-1">
+      <span class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-2">평균 풀이</span>
+      <span id="stat-avg" class="font-display text-h1 text-on-surface font-bold">—</span>
+    </div>
+
+  </div>
+
+  <!-- ── 필터 영역 ── -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 mb-6">
+    <div class="flex flex-wrap items-center gap-3">
+
+      <!-- 결과 탭 -->
+      <div class="flex items-center gap-2">
+        <button class="filter-tab active" data-filter="all">전체</button>
+        <button class="filter-tab" data-filter="win">승리</button>
+        <button class="filter-tab" data-filter="lose">패배</button>
+      </div>
+
+      <div class="w-px h-8 bg-outline-variant hidden md:block"></div>
+
+      <!-- 문제 선택 -->
+      <select id="filter-problem" class="filter-input">
+        <option value="">문제 전체</option>
+        <option value="두 수의 합">두 수의 합</option>
+        <option value="팰린드롬">팰린드롬</option>
+        <option value="피보나치">피보나치</option>
+        <option value="BFS 탐색">BFS 탐색</option>
+        <option value="동적 프로그래밍">동적 프로그래밍</option>
+      </select>
+
+      <!-- 기간 선택 -->
+      <select id="filter-period" class="filter-input">
+        <option value="">기간 전체</option>
+        <option value="7">최근 7일</option>
+        <option value="30">최근 30일</option>
+        <option value="90">최근 3개월</option>
+      </select>
+
+      <!-- 검색 -->
+      <div class="flex items-center gap-2 flex-1 min-w-[180px]">
+        <div class="relative flex-1">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary" style="font-size:18px;">search</span>
+          <input id="filter-search" type="text" placeholder="상대방 닉네임 검색"
+            class="filter-input w-full pl-9"/>
+        </div>
+        <button id="btn-reset" class="filter-input text-secondary hover:text-primary hover:border-primary whitespace-nowrap">
+          초기화
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── 경기 기록 테이블 ── -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden mb-6">
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-outline-variant" style="background:#f0edec;">
+          <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">결과</th>
+          <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">경기 ID</th>
+          <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">문제</th>
+          <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">상대</th>
+          <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">소요 시간</th>
+          <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">제출 횟수</th>
+          <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase tracking-widest">진행일</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody id="record-tbody">
+        <!-- JS로 렌더링 -->
+      </tbody>
+    </table>
+
+    <!-- 결과 없음 -->
+    <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-secondary">
+      <span class="material-symbols-outlined mb-3" style="font-size:40px; color:#c1c6d7;">inbox</span>
+      <p class="font-body-md text-body-md">조건에 맞는 기록이 없습니다.</p>
+    </div>
+  </div>
+
+  <!-- ── 페이지네이션 ── -->
+  <div id="pagination" class="flex items-center justify-center gap-2"></div>
+
+</main>
+
+<script>
+  // ── 네비게이션 바 로드 ──
+  fetch('../components/guest-navbar.html')
+    .then(res => res.text())
+    .then(html => { document.getElementById('navbar-container').innerHTML = html; });
+
+  // ── 더미 데이터 ──
+  const ALL_RECORDS = [
+    { battleId:1012, result:'win',  problem:'두 수의 합',      opponent:'devKing',   time:'04:32', submit:2, date:'2025-05-18' },
+    { battleId:1011, result:'lose', problem:'팰린드롬',          opponent:'codeWolf',  time:'07:11', submit:4, date:'2025-05-17' },
+    { battleId:1010, result:'win',  problem:'피보나치',          opponent:'algo_pro',  time:'03:05', submit:1, date:'2025-05-15' },
+    { battleId:1009, result:'win',  problem:'BFS 탐색',          opponent:'byte_king', time:'09:47', submit:3, date:'2025-05-13' },
+    { battleId:1008, result:'lose', problem:'동적 프로그래밍',   opponent:'devKing',   time:'12:30', submit:6, date:'2025-05-11' },
+    { battleId:1007, result:'win',  problem:'두 수의 합',        opponent:'night_owl', time:'02:58', submit:1, date:'2025-05-09' },
+    { battleId:1006, result:'lose', problem:'팰린드롬',          opponent:'algo_pro',  time:'08:22', submit:5, date:'2025-05-07' },
+    { battleId:1005, result:'win',  problem:'피보나치',          opponent:'codeWolf',  time:'05:14', submit:2, date:'2025-05-05' },
+    { battleId:1004, result:'win',  problem:'BFS 탐색',          opponent:'byte_king', time:'06:39', submit:2, date:'2025-05-03' },
+    { battleId:1003, result:'lose', problem:'두 수의 합',        opponent:'night_owl', time:'10:05', submit:7, date:'2025-05-01' },
+    { battleId:1002, result:'win',  problem:'동적 프로그래밍',   opponent:'devKing',   time:'11:20', submit:3, date:'2025-04-28' },
+    { battleId:1001, result:'lose', problem:'BFS 탐색',          opponent:'codeWolf',  time:'14:55', submit:8, date:'2025-04-25' },
+  ];
+
+  const PAGE_SIZE = 8;
+  let currentPage = 1;
+  let filtered = [...ALL_RECORDS];
+
+  // ── 요약 통계 계산 ──
+  function updateStats(data) {
+    const total = data.length;
+    const wins  = data.filter(r => r.result === 'win').length;
+    const loses = total - wins;
+    const rate  = total ? Math.round((wins / total) * 100) + '%' : '0%';
+
+    const avgSec = data.length
+      ? Math.round(data.reduce((acc, r) => {
+          const [m, s] = r.time.split(':').map(Number);
+          return acc + m * 60 + s;
+        }, 0) / data.length)
+      : 0;
+    const avgMin = String(Math.floor(avgSec / 60)).padStart(2, '0');
+    const avgS   = String(avgSec % 60).padStart(2, '0');
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-win').textContent   = wins;
+    document.getElementById('stat-lose').textContent  = loses;
+    document.getElementById('stat-rate').textContent  = rate;
+    document.getElementById('stat-avg').textContent   = total ? `${avgMin}:${avgS}` : '—';
+  }
+
+  // ── 테이블 렌더링 ──
+  function renderTable(data, page) {
+    const tbody     = document.getElementById('record-tbody');
+    const emptyEl   = document.getElementById('empty-state');
+    const start     = (page - 1) * PAGE_SIZE;
+    const pageData  = data.slice(start, start + PAGE_SIZE);
+
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+    emptyEl.classList.add('hidden');
+
+    pageData.forEach(r => {
+      const isWin = r.result === 'win';
+      const tr = document.createElement('tr');
+      tr.className = 'record-row border-b border-outline-variant last:border-0';
+      const key = `${r.problem}_${r.opponent}_${r.date}`;
+      tr.innerHTML = `
+        <td class="px-5 py-4">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${isWin ? 'badge-win' : 'badge-lose'}">
+            ${isWin ? '승리' : '패배'}
+          </span>
+        </td>
+        <td class="px-5 py-4 font-code-md text-body-sm text-primary font-bold">#${r.battleId}</td>
+        <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface font-medium">${r.problem}</td>
+        <td class="px-5 py-4 font-code-md text-body-sm text-secondary">${r.opponent}</td>
+        <td class="px-5 py-4 font-code-md text-body-sm text-on-surface">${r.time}</td>
+        <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface text-center">${r.submit}회</td>
+        <td class="px-5 py-4 font-body-sm text-body-sm text-secondary">${r.date}</td>
+        <td class="px-5 py-4">
+          <button class="btn-detail" onclick="window.location.href='history_detail.html?key=${encodeURIComponent(key)}'">상세보기</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── 페이지네이션 렌더링 ──
+  function renderPagination(total, page) {
+    const container = document.getElementById('pagination');
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    container.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prev = document.createElement('button');
+    prev.className = 'page-btn';
+    prev.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>';
+    prev.disabled = page === 1;
+    prev.addEventListener('click', () => goPage(page - 1));
+    container.appendChild(prev);
+
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'page-btn' + (i === page ? ' active' : '');
+      btn.textContent = i;
+      btn.addEventListener('click', () => goPage(i));
+      container.appendChild(btn);
+    }
+
+    const next = document.createElement('button');
+    next.className = 'page-btn';
+    next.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>';
+    next.disabled = page === totalPages;
+    next.addEventListener('click', () => goPage(page + 1));
+    container.appendChild(next);
+  }
+
+  function goPage(page) {
+    currentPage = page;
+    renderTable(filtered, currentPage);
+    renderPagination(filtered.length, currentPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── 필터 적용 ──
+  function applyFilter() {
+    const tab     = document.querySelector('.filter-tab.active').dataset.filter;
+    const problem = document.getElementById('filter-problem').value;
+    const period  = document.getElementById('filter-period').value;
+    const search  = document.getElementById('filter-search').value.trim().toLowerCase();
+
+    const now = new Date();
+    filtered = ALL_RECORDS.filter(r => {
+      if (tab !== 'all' && r.result !== tab) return false;
+      if (problem && r.problem !== problem) return false;
+      if (search && !r.opponent.toLowerCase().includes(search)) return false;
+      if (period) {
+        const diff = (now - new Date(r.date)) / (1000 * 60 * 60 * 24);
+        if (diff > Number(period)) return false;
+      }
+      return true;
+    });
+
+    currentPage = 1;
+    updateStats(filtered);
+    renderTable(filtered, currentPage);
+    renderPagination(filtered.length, currentPage);
+  }
+
+  // ── 이벤트 바인딩 ──
+  document.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilter();
+    });
+  });
+
+  document.getElementById('filter-problem').addEventListener('change', applyFilter);
+  document.getElementById('filter-period').addEventListener('change', applyFilter);
+  document.getElementById('filter-search').addEventListener('input', applyFilter);
+
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-filter="all"]').classList.add('active');
+    document.getElementById('filter-problem').value = '';
+    document.getElementById('filter-period').value  = '';
+    document.getElementById('filter-search').value  = '';
+    filtered = [...ALL_RECORDS];
+    currentPage = 1;
+    updateStats(filtered);
+    renderTable(filtered, currentPage);
+    renderPagination(filtered.length, currentPage);
+  });
+
+  // ── 초기 렌더링 ──
+  filtered = [...ALL_RECORDS];
+  updateStats(filtered);
+  renderTable(filtered, currentPage);
+  renderPagination(filtered.length, currentPage);
+</script>
+
+</body>
+</html>
