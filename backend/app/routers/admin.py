@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +16,7 @@ from app.schemas.user import UserRead
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+
 class DashboardStats(BaseModel):
     total_users: int
     online_users: int
@@ -23,14 +24,18 @@ class DashboardStats(BaseModel):
     total_battles: int
     total_submissions: int
 
+
 class UserAdminRead(UserRead):
     pass
+
 
 class RoleUpdate(BaseModel):
     role: str
 
+
 class ActiveUpdate(BaseModel):
     is_active: bool
+
 
 class ProblemAdminRead(BaseModel):
     model_config = {"from_attributes": True}
@@ -47,6 +52,7 @@ class ProblemAdminRead(BaseModel):
     is_deleted: bool
     created_at: datetime
     updated_at: datetime
+
 
 @router.get("/stats", response_model=DashboardStats)
 async def get_dashboard_stats(
@@ -74,6 +80,7 @@ async def get_dashboard_stats(
         total_submissions=total_submissions,
     )
 
+
 @router.get("/users", response_model=list[UserAdminRead])
 async def list_all_users(
     db: AsyncSession = Depends(get_db),
@@ -81,6 +88,7 @@ async def list_all_users(
 ):
     result = await db.execute(select(User).order_by(User.id.asc()))
     return result.scalars().all()
+
 
 @router.get("/users/{user_id}", response_model=UserAdminRead)
 async def get_user(
@@ -90,8 +98,9 @@ async def get_user(
 ):
     user = await UserRepository.get_user_by_user_id(db, user_id)
     if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
     return user
+
 
 @router.patch("/users/{user_id}/role", response_model=UserAdminRead)
 async def update_user_role(
@@ -104,13 +113,14 @@ async def update_user_role(
     if body.role not in _VALID_ROLES:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"role? {_VALID_ROLES} 以??섎굹?ъ빞 ?⑸땲??",
+            detail=f"role은 {_VALID_ROLES} 중 하나여야 합니다.",
         )
     user = await UserRepository.get_user_by_user_id(db, user_id)
     if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
     updated = await UserRepository.update_role(db, user.id, body.role)
     return updated
+
 
 @router.patch("/users/{user_id}/active", response_model=UserAdminRead)
 async def update_user_active(
@@ -121,9 +131,10 @@ async def update_user_active(
 ):
     user = await UserRepository.get_user_by_user_id(db, user_id)
     if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
     updated = await UserRepository.update_active_status(db, user.id, body.is_active)
     return updated
+
 
 @router.get("/problems", response_model=list[ProblemAdminRead])
 async def list_all_problems(
@@ -132,6 +143,7 @@ async def list_all_problems(
 ):
     result = await db.execute(select(Problem).order_by(Problem.id.asc()))
     return result.scalars().all()
+
 
 @router.patch("/problems/{problem_id}/restore", response_model=ProblemAdminRead)
 async def restore_problem(
@@ -142,9 +154,9 @@ async def restore_problem(
     result = await db.execute(select(Problem).where(Problem.id == problem_id))
     problem = result.scalar_one_or_none()
     if not problem:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="臾몄젣瑜?李얠쓣 ???놁뒿?덈떎.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="문제를 찾을 수 없습니다.")
     if not problem.is_deleted:
-        raise HTTPException(status.HTTP_409_CONFLICT, detail="?대? ?쒖꽦?붾맂 臾몄젣?낅땲??")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail="이미 활성화된 문제입니다.")
     from sqlalchemy import update
     await db.execute(
         update(Problem).where(Problem.id == problem_id).values(is_deleted=False)
@@ -152,6 +164,7 @@ async def restore_problem(
     await db.commit()
     await db.refresh(problem)
     return problem
+
 
 @router.delete("/problems/{problem_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def admin_delete_problem(
@@ -161,8 +174,9 @@ async def admin_delete_problem(
 ):
     problem = await ProblemRepository.get_problem(db, problem_id)
     if not problem:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="臾몄젣瑜?李얠쓣 ???놁뒿?덈떎.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="문제를 찾을 수 없습니다.")
     await ProblemRepository.delete_problem(db, problem_id)
+
 
 @router.post("/problems/import-zip", status_code=status.HTTP_201_CREATED)
 async def import_problem_from_zip(
@@ -170,16 +184,6 @@ async def import_problem_from_zip(
     db: AsyncSession = Depends(get_db),
     admin=Depends(get_current_admin),
 ):
-    """
-    ZIP 파일로 문제 + 테스트케이스를 한 번에 등록합니다 (관리자 전용).
-
-    ZIP 구조:
-        problem.json       - 문제 메타데이터
-        cases/1.in         - 일반 테스트케이스
-        cases/1.out
-        cases/sample_1.in  - 예제 테스트케이스
-        cases/sample_1.out
-    """
     if not file.filename.lower().endswith(".zip"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="ZIP 파일만 업로드 가능합니다.")
 
