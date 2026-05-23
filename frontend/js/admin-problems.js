@@ -18,7 +18,6 @@ function handleZipChange() {
     selectedFileText.textContent = DEFAULT_FILE_HELP;
     return;
   }
-
   selectedFileText.textContent = `${file.name} (${Math.ceil(file.size / 1024)} KB)`;
 }
 
@@ -44,19 +43,21 @@ async function handleZipSubmit(event) {
   setStatus('info', 'ZIP 파일을 서버로 전송하고 있습니다.');
 
   try {
+    const token = getToken();
     const response = await fetch('/admin/problems/import-zip', {
       method: 'POST',
       body: formData,
-      credentials: 'include'
+      headers: { 'Authorization': `Bearer ${token}` },
     });
 
-    const resultText = await response.text();
+    let result;
+    try { result = await response.json(); } catch { result = null; }
 
     if (!response.ok) {
-      throw new Error(resultText || '업로드 API 요청에 실패했습니다.');
+      throw new Error(result?.detail || '업로드 API 요청에 실패했습니다.');
     }
 
-    setStatus('success', '문제 데이터셋 업로드가 완료되었습니다.');
+    setStatus('success', result?.message || '문제 데이터셋 업로드가 완료되었습니다.');
     uploadForm.reset();
     selectedFileText.textContent = DEFAULT_FILE_HELP;
   } catch (error) {
@@ -81,7 +82,6 @@ function deleteProblem(id) {
 async function loadAdminNavbar() {
   const container = document.getElementById('navbar-container');
   if (!container) return;
-
   try {
     const response = await fetch('/components/admin-navbar.html?v=' + Date.now(), { cache: 'no-store' });
     if (!response.ok) throw new Error(`admin-navbar load failed: ${response.status}`);
@@ -104,5 +104,9 @@ function bindAdminProblemEvents() {
   });
 }
 
-loadAdminNavbar();
-bindAdminProblemEvents();
+/* ── 관리자 가드 후 초기화 ── */
+(async () => {
+  await adminGuard();
+  loadAdminNavbar();
+  bindAdminProblemEvents();
+})();

@@ -1,3 +1,5 @@
+﻿authGuard();
+
 const mainButton = document.getElementById('btn-main');
 
 if (mainButton) {

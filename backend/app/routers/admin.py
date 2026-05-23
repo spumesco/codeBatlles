@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+﻿from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +11,7 @@ from app.models.battle import Battle
 from app.models.submission import Submission
 from app.repositories.user_repository import UserRepository
 from app.repositories.problem_repository import ProblemRepository
+from app.services.problem_import_service import import_problem_zip
 from app.schemas.user import UserRead
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -89,7 +90,7 @@ async def get_user(
 ):
     user = await UserRepository.get_user_by_user_id(db, user_id)
     if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.")
     return user
 
 @router.patch("/users/{user_id}/role", response_model=UserAdminRead)
@@ -103,11 +104,11 @@ async def update_user_role(
     if body.role not in _VALID_ROLES:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"role은 {_VALID_ROLES} 중 하나여야 합니다.",
+            detail=f"role? {_VALID_ROLES} 以??섎굹?ъ빞 ?⑸땲??",
         )
     user = await UserRepository.get_user_by_user_id(db, user_id)
     if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.")
     updated = await UserRepository.update_role(db, user.id, body.role)
     return updated
 
@@ -120,7 +121,7 @@ async def update_user_active(
 ):
     user = await UserRepository.get_user_by_user_id(db, user_id)
     if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎.")
     updated = await UserRepository.update_active_status(db, user.id, body.is_active)
     return updated
 
@@ -141,9 +142,9 @@ async def restore_problem(
     result = await db.execute(select(Problem).where(Problem.id == problem_id))
     problem = result.scalar_one_or_none()
     if not problem:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="문제를 찾을 수 없습니다.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="臾몄젣瑜?李얠쓣 ???놁뒿?덈떎.")
     if not problem.is_deleted:
-        raise HTTPException(status.HTTP_409_CONFLICT, detail="이미 활성화된 문제입니다.")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail="?대? ?쒖꽦?붾맂 臾몄젣?낅땲??")
     from sqlalchemy import update
     await db.execute(
         update(Problem).where(Problem.id == problem_id).values(is_deleted=False)
@@ -160,5 +161,34 @@ async def admin_delete_problem(
 ):
     problem = await ProblemRepository.get_problem(db, problem_id)
     if not problem:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="문제를 찾을 수 없습니다.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="臾몄젣瑜?李얠쓣 ???놁뒿?덈떎.")
     await ProblemRepository.delete_problem(db, problem_id)
+
+@router.post("/problems/import-zip", status_code=status.HTTP_201_CREATED)
+async def import_problem_from_zip(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    admin=Depends(get_current_admin),
+):
+    """
+    ZIP 파일로 문제 + 테스트케이스를 한 번에 등록합니다 (관리자 전용).
+
+    ZIP 구조:
+        problem.json       - 문제 메타데이터
+        cases/1.in         - 일반 테스트케이스
+        cases/1.out
+        cases/sample_1.in  - 예제 테스트케이스
+        cases/sample_1.out
+    """
+    if not file.filename.lower().endswith(".zip"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="ZIP 파일만 업로드 가능합니다.")
+
+    content = await file.read()
+    problem, cases = await import_problem_zip(db, content)
+
+    return {
+        "message": f"문제 '{problem.title}'이(가) {len(cases)}개의 테스트케이스와 함께 등록되었습니다.",
+        "problem_id": problem.id,
+        "title": problem.title,
+        "test_case_count": len(cases),
+    }

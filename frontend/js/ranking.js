@@ -1,8 +1,10 @@
+﻿authGuard();
+
 const RANKINGS = [
   { nickname: 'devKing', userId: 'user02', wins: 31, loses: 8 },
   { nickname: 'algo_pro', userId: 'user07', wins: 28, loses: 9 },
   { nickname: 'byte_king', userId: 'user11', wins: 24, loses: 10 },
-  { nickname: '철몽', userId: 'user01', wins: 21, loses: 12 },
+  { nickname: '泥좊そ', userId: 'user01', wins: 21, loses: 12 },
   { nickname: 'codeWolf', userId: 'user04', wins: 18, loses: 15 },
   { nickname: 'night_owl', userId: 'user09', wins: 16, loses: 13 },
   { nickname: 'pythonista', userId: 'user15', wins: 12, loses: 11 },

@@ -1,6 +1,5 @@
 function ensureNavbarStyles() {
   if (document.querySelector('link[data-navbar-style="true"]')) return;
-
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = '/css/navbar.css';
@@ -14,7 +13,7 @@ async function loadNavbar() {
 
   ensureNavbarStyles();
 
-  const hasToken = Boolean(localStorage.getItem('access_token'));
+  const hasToken = Boolean(getToken());
   const navbarPath = hasToken ? '/components/user-navbar.html' : '/components/guest-navbar.html';
 
   try {
@@ -40,7 +39,7 @@ async function hydrateUserNavbar() {
     if (nickname) nickname.textContent = user.nickname;
   } catch (error) {
     console.warn(error.message);
-    localStorage.removeItem('access_token');
+    clearToken();
     window.location.href = '/login';
     return;
   }
@@ -53,8 +52,8 @@ async function hydrateUserNavbar() {
       } catch (error) {
         console.warn(error.message);
       } finally {
-        localStorage.removeItem('access_token');
-        window.location.href = '/';
+        clearToken();
+        window.location.href = '/login';
       }
     });
   }

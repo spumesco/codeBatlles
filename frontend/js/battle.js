@@ -1,3 +1,5 @@
+﻿authGuard();
+
 let sec = 0;
 
 setInterval(() => {
@@ -15,7 +17,7 @@ function toggleDrawer() {
 
   drawer.classList.toggle('open');
   if (toggleButton) {
-    toggleButton.textContent = drawer.classList.contains('open') ? '문제 닫기' : '문제 보기';
+    toggleButton.textContent = drawer.classList.contains('open') ? '臾몄젣 ?リ린' : '臾몄젣 蹂닿린';
   }
 }
 
@@ -23,11 +25,11 @@ function submitCode() {
   const result = document.getElementById('judgeResult');
   if (!result) return;
 
-  result.textContent = '채점 중...';
+  result.textContent = '梨꾩젏 以?..';
   result.style.color = '#0058bc';
 
   setTimeout(() => {
-    result.textContent = '채점 결과: Accepted';
+    result.textContent = '梨꾩젏 寃곌낵: Accepted';
     result.style.color = '#16a34a';
     setTimeout(() => {
       location.href = '/result';

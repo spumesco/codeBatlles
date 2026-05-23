@@ -1,6 +1,8 @@
+﻿authGuard();
+
 const DETAIL_DATA = {
-  '두 수의 합_devKing_2026-05-18': {
-    problem: '두 수의 합',
+  '???섏쓽 ??devKing_2026-05-18': {
+    problem: '???섏쓽 ??,
     result: 'win',
     opponent: 'devKing',
     start: '2026-05-18 21:10',
@@ -15,8 +17,8 @@ const DETAIL_DATA = {
       { lang: 'Java', verdict: 'Wrong Answer', at: '21:13' }
     ]
   },
-  '그리디 연습_codeWolf_2026-05-17': {
-    problem: '그리디 연습',
+  '洹몃━???곗뒿_codeWolf_2026-05-17': {
+    problem: '洹몃━???곗뒿',
     result: 'lose',
     opponent: 'codeWolf',
     start: '2026-05-17 19:00',
@@ -45,7 +47,7 @@ function verdictClass(verdict) {
 
 function renderSubmits(list) {
   if (!list || list.length === 0) {
-    return '<p class="text-secondary text-sm">제출 기록 없음</p>';
+    return '<p class="text-secondary text-sm">?쒖텧 湲곕줉 ?놁쓬</p>';
   }
 
   return list.map((submit, index) => `
@@ -62,7 +64,7 @@ function renderDetail(data) {
   const badge = document.getElementById('result-badge');
   const isWin = data.result === 'win';
 
-  badge.textContent = data.result ? (isWin ? '승리' : '패배') : '-';
+  badge.textContent = data.result ? (isWin ? '?밸━' : '?⑤같') : '-';
   badge.className = `inline-block px-4 py-2 rounded-full text-sm font-bold ${data.result ? (isWin ? 'badge-win' : 'badge-lose') : 'badge-empty'}`;
 
   document.getElementById('detail-problem').textContent = data.problem || '-';

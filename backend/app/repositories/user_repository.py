@@ -1,4 +1,4 @@
-from sqlalchemy import select, update
+﻿from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User

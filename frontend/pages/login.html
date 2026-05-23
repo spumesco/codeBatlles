@@ -26,19 +26,33 @@
         <input
           id="username"
           type="text"
+          autocomplete="username"
           placeholder=""
           class="w-full px-md py-sm border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface bg-surface placeholder:text-secondary focus:outline-none focus:border-primary transition-colors"
         />
       </div>
 
-      <div class="mb-6">
+      <div class="mb-4">
         <label class="block font-body-sm text-body-sm text-on-surface-variant mb-1" for="password">비밀번호</label>
         <input
           id="password"
           type="password"
+          autocomplete="current-password"
           placeholder=""
           class="w-full px-md py-sm border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface bg-surface placeholder:text-secondary focus:outline-none focus:border-primary transition-colors"
         />
+      </div>
+
+      <!-- 아이디 저장 / 자동 로그인 -->
+      <div class="flex items-center gap-5 mb-6">
+        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+          <input id="chk-save-id" type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" />
+          <span class="font-body-sm text-body-sm text-secondary">아이디 저장</span>
+        </label>
+        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+          <input id="chk-auto-login" type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" />
+          <span class="font-body-sm text-body-sm text-secondary">자동 로그인</span>
+        </label>
       </div>
 
       <button id="btn-login" type="button" class="w-full py-sm bg-primary text-on-primary font-body-md text-body-md font-bold rounded-lg hover:bg-primary-container active:scale-95 transition-all mb-5">
