@@ -26,10 +26,28 @@ async function loadNavbar() {
   }
 
   if (hasToken) {
+    bindLogoutButton();
     await hydrateUserNavbar();
   }
 
   return container;
+}
+
+function bindLogoutButton() {
+  const logoutButton = document.getElementById('btn-logout');
+  if (!logoutButton) return;
+
+  logoutButton.addEventListener('click', event => {
+    event.preventDefault();
+    logoutButton.disabled = true;
+
+    apiLogout().catch(error => {
+      console.warn(error.message);
+    });
+
+    clearToken();
+    window.location.replace('/');
+  });
 }
 
 async function hydrateUserNavbar() {
@@ -37,25 +55,22 @@ async function hydrateUserNavbar() {
     const user = await getMe();
     const nickname = document.getElementById('navbar-nickname');
     if (nickname) nickname.textContent = user.nickname;
+
+    if (user.role === 'admin') {
+      const navLinks = document.querySelector('.nav-links');
+      if (navLinks && !navLinks.querySelector('a[href="/admin-problems"]')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = '/admin-problems';
+        adminLink.className = 'font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors';
+        adminLink.textContent = '관리자';
+        navLinks.appendChild(adminLink);
+      }
+    }
   } catch (error) {
     console.warn(error.message);
     clearToken();
     window.location.href = '/login';
     return;
-  }
-
-  const logoutButton = document.getElementById('btn-logout');
-  if (logoutButton) {
-    logoutButton.addEventListener('click', async () => {
-      try {
-        await apiLogout();
-      } catch (error) {
-        console.warn(error.message);
-      } finally {
-        clearToken();
-        window.location.href = '/login';
-      }
-    });
   }
 }
 

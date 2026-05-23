@@ -10,13 +10,15 @@ function renderProfileLoadFailure() {
 }
 
 function renderMyProfile(user) {
-  setText('me-nickname', user.nickname);
-  setText('me-user-id', user.user_id);
+  setText('me-nickname', user.nickname || '-');
+  setText('me-user-id', user.user_id || '-');
   setText('me-ranking', user.rank ? `#${user.rank}` : '-');
 
+  const winCount = user.win_count ?? 0;
+  const loseCount = user.lose_count ?? 0;
   const record = document.getElementById('me-record');
   if (record) {
-    record.innerHTML = `<span class="text-win">${user.win_count}승</span> <span class="text-lose">${user.lose_count}패</span>`;
+    record.innerHTML = `<span class="text-win">${winCount}승</span> <span class="text-lose">${loseCount}패</span>`;
   }
 
   const status = document.getElementById('me-status');
@@ -40,6 +42,7 @@ async function loadMyProfile() {
     window.location.href = '/login';
     return;
   }
+
   try {
     const user = await getMe();
     renderMyProfile(user);
@@ -56,8 +59,8 @@ async function acceptRequest(requestId) {
     await apiRequest(`/match/request/${requestId}/accept`, { method: 'POST' });
     alert('배틀 수락! 곧 배틀이 시작됩니다.');
     loadPendingRequests();
-  } catch (e) {
-    alert(e.message);
+  } catch (error) {
+    alert(error.message);
   }
 }
 
@@ -65,8 +68,8 @@ async function rejectRequest(requestId) {
   try {
     await apiRequest(`/match/request/${requestId}/reject`, { method: 'POST' });
     loadPendingRequests();
-  } catch (e) {
-    alert(e.message);
+  } catch (error) {
+    alert(error.message);
   }
 }
 
@@ -78,27 +81,29 @@ async function loadPendingRequests() {
   try {
     const requests = await apiRequest('/match/requests/pending');
     list.innerHTML = '';
+
     if (requests.length === 0) {
       empty.style.display = '';
-    } else {
-      empty.style.display = 'none';
-      requests.forEach(req => {
-        const div = document.createElement('div');
-        div.className = 'request-box';
-        div.innerHTML = `
-          <span class="request-text"><strong class="request-user-name">${req.requester_nickname}</strong>님이 배틀을 신청했습니다.</span>
-          <div class="request-actions">
-            <button class="px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all btn-accept" data-id="${req.id}">수락</button>
-            <button class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:text-red-500 transition-all btn-reject" data-id="${req.id}">거절</button>
-          </div>
-        `;
-        div.querySelector('.btn-accept').addEventListener('click', () => acceptRequest(req.id));
-        div.querySelector('.btn-reject').addEventListener('click', () => rejectRequest(req.id));
-        list.appendChild(div);
-      });
+      return;
     }
-  } catch (e) {
-    console.warn('pending requests load failed:', e.message);
+
+    empty.style.display = 'none';
+    requests.forEach(request => {
+      const div = document.createElement('div');
+      div.className = 'request-box';
+      div.innerHTML = `
+        <span class="request-text"><strong class="request-user-name">${request.requester_nickname}</strong>님이 배틀을 신청했습니다.</span>
+        <div class="request-actions">
+          <button class="px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all btn-accept" data-id="${request.id}">수락</button>
+          <button class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:text-red-500 transition-all btn-reject" data-id="${request.id}">거절</button>
+        </div>
+      `;
+      div.querySelector('.btn-accept').addEventListener('click', () => acceptRequest(request.id));
+      div.querySelector('.btn-reject').addEventListener('click', () => rejectRequest(request.id));
+      list.appendChild(div);
+    });
+  } catch (error) {
+    console.warn('pending requests load failed:', error.message);
   }
 }
 
@@ -124,24 +129,26 @@ async function loadOnlineUsers() {
       tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">온라인 사용자 없음</td></tr>';
       return;
     }
-    tbody.innerHTML = users.map(u => {
-      const canReq = u.is_online && !u.is_battling;
-      const btn = canReq
-        ? `<button class="btn-request-user px-sm py-1 border border-outline-variant text-secondary rounded text-xs hover:border-primary hover:text-primary transition-all" data-opponent="${u.nickname}">배틀 신청</button>`
-        : `<button class="px-sm py-1 border border-outline-variant text-secondary rounded text-xs opacity-40" disabled>신청 불가</button>`;
+
+    tbody.innerHTML = users.map(user => {
+      const canRequest = user.is_online && !user.is_battling;
+      const button = canRequest
+        ? `<button class="btn-request-user px-sm py-1 border border-outline-variant text-secondary rounded text-xs hover:border-primary hover:text-primary transition-all" data-opponent="${user.nickname}">배틀 신청</button>`
+        : '<button class="px-sm py-1 border border-outline-variant text-secondary rounded text-xs opacity-40" disabled>신청 불가</button>';
+
       return `<tr>
-        <td>${u.nickname}</td>
-        <td class="text-muted-mono">${u.user_id}</td>
-        <td><span class="${statusClass(u)}">${statusLabel(u)}</span></td>
-        <td>${btn}</td>
+        <td>${user.nickname}</td>
+        <td class="text-muted-mono">${user.user_id}</td>
+        <td><span class="${statusClass(user)}">${statusLabel(user)}</span></td>
+        <td>${button}</td>
       </tr>`;
     }).join('');
 
     tbody.querySelectorAll('.btn-request-user').forEach(button => {
       button.addEventListener('click', () => goBattleRequest(button.dataset.opponent));
     });
-  } catch (e) {
-    console.warn('online users load failed:', e.message);
+  } catch (error) {
+    console.warn('online users load failed:', error.message);
     tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">불러오기 실패</td></tr>';
   }
 }
