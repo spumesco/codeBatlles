@@ -1,0 +1,267 @@
+html.dark,
+html.dark body,
+body.dark-preview {
+  background: #121417 !important;
+  color: #f4f7fb !important;
+  color-scheme: dark;
+}
+
+html.dark main,
+html.dark section,
+html.dark .page-wrap,
+html.dark .hero-section,
+html.dark .hero-grid,
+html.dark .main-area,
+body.dark-preview main,
+body.dark-preview section,
+body.dark-preview .page-wrap,
+body.dark-preview .hero-section,
+body.dark-preview .hero-grid,
+body.dark-preview .main-area {
+  background-color: #121417 !important;
+}
+
+html.dark .bg-surface,
+html.dark .bg-surface-container-low,
+html.dark .bg-surface-container-lowest,
+html.dark .surface,
+body.dark-preview .bg-surface,
+body.dark-preview .bg-surface-container-low,
+body.dark-preview .bg-surface-container-lowest,
+body.dark-preview .surface {
+  background-color: #121417 !important;
+}
+
+html.dark .card,
+html.dark .auth-card,
+html.dark .feature-card,
+html.dark .stat-card,
+html.dark .filter-panel,
+html.dark .records-table,
+html.dark .detail-card,
+html.dark .submission-card,
+html.dark .match-box,
+html.dark .timer-box,
+html.dark .upload-box,
+html.dark .format-box,
+html.dark .countdown-modal,
+body.dark-preview .card,
+body.dark-preview .auth-card,
+body.dark-preview .feature-card,
+body.dark-preview .stat-card,
+body.dark-preview .filter-panel,
+body.dark-preview .records-table,
+body.dark-preview .detail-card,
+body.dark-preview .submission-card,
+body.dark-preview .match-box,
+body.dark-preview .timer-box,
+body.dark-preview .upload-box,
+body.dark-preview .format-box,
+body.dark-preview .countdown-modal {
+  background: #1b2028 !important;
+  border-color: #344052 !important;
+  color: #f4f7fb !important;
+}
+
+html.dark header,
+body.dark-preview header {
+  background-color: #121417 !important;
+  border-bottom-color: #344052 !important;
+}
+
+html.dark table,
+html.dark thead,
+html.dark tbody,
+html.dark tr,
+body.dark-preview table,
+body.dark-preview thead,
+body.dark-preview tbody,
+body.dark-preview tr {
+  background: #1b2028 !important;
+  color: #f4f7fb !important;
+}
+
+html.dark th,
+html.dark td,
+html.dark .table-head,
+html.dark .record-row,
+body.dark-preview th,
+body.dark-preview td,
+body.dark-preview .table-head,
+body.dark-preview .record-row {
+  background-color: #1b2028 !important;
+  border-color: #344052 !important;
+  color: #dbe3ee !important;
+}
+
+html.dark .record-row:hover,
+body.dark-preview .record-row:hover {
+  background-color: #242b36 !important;
+}
+
+html.dark .text-on-surface,
+html.dark .page-title,
+html.dark .card-title,
+html.dark .setting-name,
+html.dark .drawer-title,
+html.dark .history-drawer-title,
+html.dark .problem-title,
+html.dark .info-value,
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6,
+body.dark-preview .text-on-surface,
+body.dark-preview .page-title,
+body.dark-preview .card-title,
+body.dark-preview .setting-name,
+body.dark-preview .drawer-title,
+body.dark-preview .history-drawer-title,
+body.dark-preview .problem-title,
+body.dark-preview .info-value,
+body.dark-preview h1,
+body.dark-preview h2,
+body.dark-preview h3,
+body.dark-preview h4,
+body.dark-preview h5,
+body.dark-preview h6 {
+  color: #f4f7fb !important;
+}
+
+html.dark .text-secondary,
+html.dark .text-on-surface-variant,
+html.dark .setting-help,
+html.dark .muted,
+html.dark .card-title,
+html.dark .nav-links a,
+html.dark .nav-username,
+html.dark .editor-header-title,
+html.dark .editor-status,
+html.dark .footer-center,
+html.dark .footer-language,
+html.dark .problem-eyebrow,
+html.dark .section-label,
+html.dark .meta-label,
+body.dark-preview .text-secondary,
+body.dark-preview .text-on-surface-variant,
+body.dark-preview .setting-help,
+body.dark-preview .muted,
+body.dark-preview .card-title,
+body.dark-preview .nav-links a,
+body.dark-preview .nav-username,
+body.dark-preview .editor-header-title,
+body.dark-preview .editor-status,
+body.dark-preview .footer-center,
+body.dark-preview .footer-language,
+body.dark-preview .problem-eyebrow,
+body.dark-preview .section-label,
+body.dark-preview .meta-label {
+  color: #aeb8c7 !important;
+}
+
+html.dark .border,
+html.dark .border-outline-variant,
+html.dark .nav-divider,
+html.dark .setting-row,
+html.dark .editor-pane,
+html.dark .editor-header,
+html.dark .editor-footer,
+body.dark-preview .border,
+body.dark-preview .border-outline-variant,
+body.dark-preview .nav-divider,
+body.dark-preview .setting-row,
+body.dark-preview .editor-pane,
+body.dark-preview .editor-header,
+body.dark-preview .editor-footer {
+  border-color: #344052 !important;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select,
+html.dark .form-input,
+html.dark .filter-input,
+html.dark .select-input,
+html.dark .input-nick,
+html.dark .lang-select,
+body.dark-preview input,
+body.dark-preview textarea,
+body.dark-preview select,
+body.dark-preview .form-input,
+body.dark-preview .filter-input,
+body.dark-preview .select-input,
+body.dark-preview .input-nick,
+body.dark-preview .lang-select {
+  background-color: #151a21 !important;
+  border-color: #465469 !important;
+  color: #f4f7fb !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder,
+body.dark-preview input::placeholder,
+body.dark-preview textarea::placeholder {
+  color: #8d99aa !important;
+}
+
+html.dark .drawer,
+html.dark .history-detail-drawer,
+body.dark-preview .drawer,
+body.dark-preview .history-detail-drawer {
+  background: #1b2028 !important;
+  border-color: #344052 !important;
+  color: #f4f7fb !important;
+}
+
+html.dark .section-body,
+html.dark .meta-item,
+html.dark .editor-header,
+html.dark .editor-footer,
+html.dark .editor-body,
+html.dark .history-drawer-info,
+html.dark .history-submit-row,
+body.dark-preview .section-body,
+body.dark-preview .meta-item,
+body.dark-preview .editor-header,
+body.dark-preview .editor-footer,
+body.dark-preview .editor-body,
+body.dark-preview .history-drawer-info,
+body.dark-preview .history-submit-row {
+  background: #151a21 !important;
+  border-color: #344052 !important;
+  color: #dbe3ee !important;
+}
+
+html.dark .code-example,
+body.dark-preview .code-example {
+  background: #0f203a !important;
+  color: #8ab4ff !important;
+}
+
+html.dark .nav-logo,
+html.dark .text-primary,
+html.dark .timer,
+body.dark-preview .nav-logo,
+body.dark-preview .text-primary,
+body.dark-preview .timer {
+  color: #8ab4ff !important;
+}
+
+html.dark .bg-primary,
+body.dark-preview .bg-primary {
+  background-color: #8ab4ff !important;
+  color: #0b1220 !important;
+}
+
+html.dark .btn-logout,
+body.dark-preview .btn-logout {
+  background-color: #8ab4ff !important;
+  color: #0b1220 !important;
+}
+
+html.dark .btn-logout:hover,
+body.dark-preview .btn-logout:hover {
+  background-color: #adc6ff !important;
+}

@@ -5,6 +5,12 @@ const nicknameInput = document.getElementById('nicknameInput');
 const saveBtn = document.getElementById('btn-save');
 const cancelBtn = document.getElementById('btn-cancel');
 
+function applyTheme(isDark) {
+  document.body.classList.toggle('dark-preview', isDark);
+  document.documentElement.classList.toggle('dark', isDark);
+  localStorage.setItem(THEME_STORAGE_KEY, isDark ? 'dark' : 'light');
+}
+
 async function loadSettingsProfile() {
   try {
     const user = await getMe();
@@ -45,8 +51,11 @@ if (cancelBtn) {
 }
 
 if (darkModeToggle) {
+  darkModeToggle.checked = localStorage.getItem(THEME_STORAGE_KEY) !== 'light';
+  applyTheme(darkModeToggle.checked);
+
   darkModeToggle.addEventListener('change', () => {
-    document.body.classList.toggle('dark-preview', darkModeToggle.checked);
+    applyTheme(darkModeToggle.checked);
   });
 }
 

@@ -115,3 +115,45 @@ header {
   margin-left: 6px;
   vertical-align: middle;
 }
+
+html.dark body,
+body.dark-preview {
+  background-color: #121417;
+  color: #f4f7fb;
+}
+
+html.dark header,
+body.dark-preview header {
+  background-color: #121417;
+  border-bottom-color: #2f3743;
+}
+
+html.dark .nav-logo,
+body.dark-preview .nav-logo {
+  color: #8ab4ff;
+}
+
+html.dark .nav-links a,
+body.dark-preview .nav-links a,
+html.dark .nav-username,
+body.dark-preview .nav-username {
+  color: #c9d1dc;
+}
+
+html.dark .nav-links a:hover,
+body.dark-preview .nav-links a:hover,
+html.dark .nav-links a.active,
+body.dark-preview .nav-links a.active {
+  color: #8ab4ff;
+}
+
+html.dark .btn-logout,
+body.dark-preview .btn-logout {
+  background-color: #8ab4ff;
+  color: #0b1220;
+}
+
+html.dark .btn-logout:hover,
+body.dark-preview .btn-logout:hover {
+  background-color: #adc6ff;
+}
