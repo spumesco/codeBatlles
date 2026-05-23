@@ -55,6 +55,17 @@ async function hydrateUserNavbar() {
     const user = await getMe();
     const nickname = document.getElementById('navbar-nickname');
     if (nickname) nickname.textContent = user.nickname;
+
+    if (user.role === 'admin') {
+      const navLinks = document.querySelector('.nav-links');
+      if (navLinks && !navLinks.querySelector('a[href="/admin-problems"]')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = '/admin-problems';
+        adminLink.className = 'font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors';
+        adminLink.textContent = '관리자';
+        navLinks.appendChild(adminLink);
+      }
+    }
   } catch (error) {
     console.warn(error.message);
     clearToken();
