@@ -1,4 +1,4 @@
-﻿const zipInput = document.getElementById('problemZip');
+const zipInput = document.getElementById('problemZip');
 const selectedFileText = document.getElementById('selectedFileText');
 const uploadForm = document.getElementById('zipUploadForm');
 const uploadButton = document.getElementById('uploadButton');
@@ -43,7 +43,7 @@ async function handleZipSubmit(event) {
   setStatus('info', 'ZIP 파일을 서버로 전송하고 있습니다.');
 
   try {
-    const token = localStorage.getItem('access_token');
+    const token = getToken();
     const response = await fetch('/admin/problems/import-zip', {
       method: 'POST',
       body: formData,

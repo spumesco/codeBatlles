@@ -1,6 +1,29 @@
-﻿/* ── 공통 요청 헬퍼 ── */
+/* ── 토큰 스토리지 헬퍼 ── */
+// 기본: sessionStorage (탭/브라우저 닫으면 자동 로그아웃)
+// 자동 로그인 선택 시: localStorage (브라우저 재시작 후에도 유지)
+
+function getToken() {
+  return sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
+}
+
+function setToken(token, persist) {
+  if (persist) {
+    localStorage.setItem('access_token', token);
+    sessionStorage.removeItem('access_token');
+  } else {
+    sessionStorage.setItem('access_token', token);
+    localStorage.removeItem('access_token');
+  }
+}
+
+function clearToken() {
+  sessionStorage.removeItem('access_token');
+  localStorage.removeItem('access_token');
+}
+
+/* ── 공통 요청 헬퍼 ── */
 async function apiRequest(path, options = {}) {
-  const token = localStorage.getItem('access_token');
+  const token = getToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   Object.assign(headers, options.headers || {});
@@ -35,24 +58,15 @@ async function getMe() {
 }
 
 /* ── 가드 함수 ── */
-
-/**
- * 로그인 여부 확인. 토큰 없으면 즉시 /login 으로 이동.
- * 페이지 JS 최상단에서 호출하세요.
- */
 function authGuard() {
-  if (!localStorage.getItem('access_token')) {
+  if (!getToken()) {
     document.documentElement.hidden = true;
     window.location.replace('/login');
   }
 }
 
-/**
- * 관리자 여부 확인. 토큰 없으면 /login, 일반 유저면 /main 으로 이동.
- * async 함수이므로 await 로 호출하세요.
- */
 async function adminGuard() {
-  if (!localStorage.getItem('access_token')) {
+  if (!getToken()) {
     document.documentElement.hidden = true;
     window.location.replace('/login');
     return;
@@ -64,7 +78,7 @@ async function adminGuard() {
       window.location.replace('/main');
     }
   } catch (e) {
-    localStorage.removeItem('access_token');
+    clearToken();
     document.documentElement.hidden = true;
     window.location.replace('/login');
   }
