@@ -53,7 +53,7 @@ async function hydrateUserNavbar() {
         console.warn(error.message);
       } finally {
         clearToken();
-        window.location.href = '/';
+        window.location.href = '/login';
       }
     });
   }

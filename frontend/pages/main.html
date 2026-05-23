@@ -26,14 +26,8 @@
     </div>
     <div class="card">
       <div class="card-title">최근 배틀 요청</div>
-      <div class="request-box">
-        <span class="request-text"><strong class="request-user-name">김건한</strong>님이 배틀을 신청했습니다.</span>
-        <div class="request-actions">
-          <button class="px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all">수락</button>
-          <button class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:text-red-500 transition-all">거절</button>
-        </div>
-      </div>
-      <p class="request-empty">새로운 요청이 없습니다.</p>
+      <div id="request-list"></div>
+      <p id="request-empty" class="request-empty">새로운 요청이 없습니다.</p>
     </div>
   </div>
 
@@ -60,22 +54,8 @@
       <div class="card-title">온라인 사용자 목록</div>
       <table>
         <thead><tr><th>닉네임</th><th>ID</th><th>상태</th><th>관리</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>김건한</td><td class="text-muted-mono">user02</td>
-            <td><span class="status-online">● 대기 중</span></td>
-            <td><button class="btn-request-user px-sm py-1 border border-outline-variant text-secondary rounded text-xs hover:border-primary hover:text-primary transition-all" data-opponent="김건한">배틀 신청</button></td>
-          </tr>
-          <tr>
-            <td>조하은</td><td class="text-muted-mono">user03</td>
-            <td><span class="status-battling">● 배틀 중</span></td>
-            <td><button class="px-sm py-1 border border-outline-variant text-secondary rounded text-xs opacity-40" disabled>신청 불가</button></td>
-          </tr>
-          <tr>
-            <td>유지민</td><td class="text-muted-mono">user04</td>
-            <td><span class="status-matching">● 매칭 중</span></td>
-            <td><button class="px-sm py-1 border border-outline-variant text-secondary rounded text-xs opacity-40" disabled>신청 불가</button></td>
-          </tr>
+        <tbody id="online-users-tbody">
+          <tr><td colspan="4" class="text-center text-secondary py-4">불러오는 중...</td></tr>
         </tbody>
       </table>
     </div>
@@ -84,6 +64,6 @@
 <script src="/js/config.js?v=main-profile-1"></script>
 <script src="/js/api.js?v=main-profile-1"></script>
 <script src="/js/navbar.js?v=navbar-1"></script>
-<script src="/js/main.js?v=main-profile-1"></script>
+<script src="/js/main.js?v=main-profile-2"></script>
 </body>
 </html>
