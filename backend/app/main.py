@@ -1,4 +1,4 @@
-from contextlib import asynccontextmanager
+﻿from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -117,3 +117,5 @@ def admin_problems_page():
 @app.get("/api/health")
 def health_check():
     return {"message": "CodeBattles backend is running"}
+
+
