@@ -8,12 +8,16 @@ body.dark-preview {
 
 html.dark main,
 html.dark section,
+html.dark .content-wrap,
+html.dark .page-container,
 html.dark .page-wrap,
 html.dark .hero-section,
 html.dark .hero-grid,
 html.dark .main-area,
 body.dark-preview main,
 body.dark-preview section,
+body.dark-preview .content-wrap,
+body.dark-preview .page-container,
 body.dark-preview .page-wrap,
 body.dark-preview .hero-section,
 body.dark-preview .hero-grid,
@@ -25,10 +29,16 @@ html.dark .bg-surface,
 html.dark .bg-surface-container-low,
 html.dark .bg-surface-container-lowest,
 html.dark .surface,
+html.dark .bg-white,
+html.dark .bg-gray-50,
+html.dark .bg-gray-100,
 body.dark-preview .bg-surface,
 body.dark-preview .bg-surface-container-low,
 body.dark-preview .bg-surface-container-lowest,
-body.dark-preview .surface {
+body.dark-preview .surface,
+body.dark-preview .bg-white,
+body.dark-preview .bg-gray-50,
+body.dark-preview .bg-gray-100 {
   background-color: #121417 !important;
 }
 
@@ -45,6 +55,13 @@ html.dark .timer-box,
 html.dark .upload-box,
 html.dark .format-box,
 html.dark .countdown-modal,
+html.dark .wait-card,
+html.dark .request-box,
+html.dark .table-wrap,
+html.dark .side-nav,
+html.dark .submit-box,
+html.dark .history-drawer-section,
+html.dark .rank-badge,
 body.dark-preview .card,
 body.dark-preview .auth-card,
 body.dark-preview .feature-card,
@@ -61,6 +78,65 @@ body.dark-preview .countdown-modal {
   background: #1b2028 !important;
   border-color: #344052 !important;
   color: #f4f7fb !important;
+}
+
+body.dark-preview .wait-card,
+body.dark-preview .request-box,
+body.dark-preview .table-wrap,
+body.dark-preview .side-nav,
+body.dark-preview .submit-box,
+body.dark-preview .history-drawer-section {
+  background: #1b2028 !important;
+  border-color: #344052 !important;
+  color: #f4f7fb !important;
+}
+
+html.dark .rank-badge,
+body.dark-preview .rank-badge {
+  background: #151a21 !important;
+  border-color: #465469 !important;
+  color: #dbe3ee !important;
+}
+
+html.dark .rank-1,
+body.dark-preview .rank-1 {
+  background: #3a2f10 !important;
+  border-color: #caa53b !important;
+  color: #f8d76a !important;
+}
+
+html.dark .rank-2,
+body.dark-preview .rank-2 {
+  background: #26303d !important;
+  border-color: #7b8797 !important;
+  color: #d8dee8 !important;
+}
+
+html.dark .rank-3,
+body.dark-preview .rank-3 {
+  background: #3b2418 !important;
+  border-color: #c9814d !important;
+  color: #ffbd8a !important;
+}
+
+html.dark .ranking-row,
+body.dark-preview .ranking-row {
+  background: #1b2028 !important;
+}
+
+html.dark .ranking-row:hover,
+body.dark-preview .ranking-row:hover {
+  background: #242b36 !important;
+}
+
+html.dark .win-cell,
+body.dark-preview .win-cell {
+  color: #72e0ad !important;
+}
+
+html.dark .lose-cell,
+body.dark-preview .lose-cell {
+  color: #ff8a8a !important;
 }
 
 html.dark header,
@@ -84,10 +160,12 @@ body.dark-preview tr {
 html.dark th,
 html.dark td,
 html.dark .table-head,
+html.dark .ranking-table-head,
 html.dark .record-row,
 body.dark-preview th,
 body.dark-preview td,
 body.dark-preview .table-head,
+body.dark-preview .ranking-table-head,
 body.dark-preview .record-row {
   background-color: #1b2028 !important;
   border-color: #344052 !important;
@@ -217,6 +295,9 @@ body.dark-preview .history-detail-drawer {
 
 html.dark .section-body,
 html.dark .meta-item,
+html.dark .history-submit-card,
+html.dark .history-submit-row,
+html.dark .card-icon,
 html.dark .editor-header,
 html.dark .editor-footer,
 html.dark .editor-body,
@@ -224,6 +305,9 @@ html.dark .history-drawer-info,
 html.dark .history-submit-row,
 body.dark-preview .section-body,
 body.dark-preview .meta-item,
+body.dark-preview .history-submit-card,
+body.dark-preview .history-submit-row,
+body.dark-preview .card-icon,
 body.dark-preview .editor-header,
 body.dark-preview .editor-footer,
 body.dark-preview .editor-body,

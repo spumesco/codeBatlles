@@ -2,6 +2,10 @@
 
 let sec = 0;
 
+function isAdminUser(user) {
+  return String(user?.role || '').trim().toLowerCase() === 'admin';
+}
+
 setInterval(() => {
   sec++;
   const m = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -93,13 +97,51 @@ async function loadBattleNavbar() {
   const container = document.getElementById('navbar-container');
   if (!container) return;
 
+  let currentUser = null;
+  let navbarPath = '/components/battle-navbar.html';
+
   try {
-    const response = await fetch('/components/battle-navbar.html?v=' + Date.now(), { cache: 'no-store' });
-    if (!response.ok) throw new Error(`battle-navbar load failed: ${response.status}`);
-    container.innerHTML = await response.text();
+    currentUser = await getMe();
+    if (isAdminUser(currentUser)) {
+      navbarPath = '/components/admin-navbar.html';
+    }
   } catch (error) {
     console.warn(error.message);
   }
+
+  try {
+    const response = await fetch(navbarPath + '?v=' + Date.now(), { cache: 'no-store' });
+    if (!response.ok) throw new Error(`battle-navbar load failed: ${response.status}`);
+    container.innerHTML = await response.text();
+    hydrateBattleNavbar(currentUser);
+    bindBattleNavbarLogout();
+  } catch (error) {
+    console.warn(error.message);
+  }
+}
+
+function hydrateBattleNavbar(user) {
+  if (!user) return;
+
+  const nickname = document.getElementById('navbar-nickname');
+  if (nickname) nickname.textContent = user.nickname || (isAdminUser(user) ? '관리자' : '-');
+}
+
+function bindBattleNavbarLogout() {
+  const logoutButton = document.getElementById('btn-logout');
+  if (!logoutButton) return;
+
+  logoutButton.addEventListener('click', event => {
+    event.preventDefault();
+    logoutButton.disabled = true;
+
+    apiLogout().catch(error => {
+      console.warn(error.message);
+    });
+
+    clearToken();
+    window.location.replace('/');
+  });
 }
 
 function bindBattleEvents() {
