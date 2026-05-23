@@ -1,16 +1,18 @@
+﻿authGuard();
+
 const ALL_RECORDS = [
-  { battleId: 1012, result: 'win', problem: '두 수의 합', opponent: 'devKing', time: '04:32', submit: 2, date: '2026-05-18' },
-  { battleId: 1011, result: 'lose', problem: '그리디 연습', opponent: 'codeWolf', time: '07:11', submit: 4, date: '2026-05-17' },
-  { battleId: 1010, result: 'win', problem: '피보나치', opponent: 'algo_pro', time: '03:05', submit: 1, date: '2026-05-15' },
-  { battleId: 1009, result: 'win', problem: 'BFS 탐색', opponent: 'byte_king', time: '09:47', submit: 3, date: '2026-05-13' },
-  { battleId: 1008, result: 'lose', problem: '동적 프로그래밍', opponent: 'devKing', time: '12:30', submit: 6, date: '2026-05-11' },
-  { battleId: 1007, result: 'win', problem: '두 수의 합', opponent: 'night_owl', time: '02:58', submit: 1, date: '2026-05-09' },
-  { battleId: 1006, result: 'lose', problem: '그리디 연습', opponent: 'algo_pro', time: '08:22', submit: 5, date: '2026-05-07' },
-  { battleId: 1005, result: 'win', problem: '피보나치', opponent: 'codeWolf', time: '05:14', submit: 2, date: '2026-05-05' },
-  { battleId: 1004, result: 'win', problem: 'BFS 탐색', opponent: 'byte_king', time: '06:39', submit: 2, date: '2026-05-03' },
-  { battleId: 1003, result: 'lose', problem: '두 수의 합', opponent: 'night_owl', time: '10:05', submit: 7, date: '2026-05-01' },
-  { battleId: 1002, result: 'win', problem: '동적 프로그래밍', opponent: 'devKing', time: '11:20', submit: 3, date: '2026-04-28' },
-  { battleId: 1001, result: 'lose', problem: 'BFS 탐색', opponent: 'codeWolf', time: '14:55', submit: 8, date: '2026-04-25' }
+  { battleId: 1012, result: 'win', problem: '???섏쓽 ??, opponent: 'devKing', time: '04:32', submit: 2, date: '2026-05-18' },
+  { battleId: 1011, result: 'lose', problem: '洹몃━???곗뒿', opponent: 'codeWolf', time: '07:11', submit: 4, date: '2026-05-17' },
+  { battleId: 1010, result: 'win', problem: '?쇰낫?섏튂', opponent: 'algo_pro', time: '03:05', submit: 1, date: '2026-05-15' },
+  { battleId: 1009, result: 'win', problem: 'BFS ?먯깋', opponent: 'byte_king', time: '09:47', submit: 3, date: '2026-05-13' },
+  { battleId: 1008, result: 'lose', problem: '?숈쟻 ?꾨줈洹몃옒諛?, opponent: 'devKing', time: '12:30', submit: 6, date: '2026-05-11' },
+  { battleId: 1007, result: 'win', problem: '???섏쓽 ??, opponent: 'night_owl', time: '02:58', submit: 1, date: '2026-05-09' },
+  { battleId: 1006, result: 'lose', problem: '洹몃━???곗뒿', opponent: 'algo_pro', time: '08:22', submit: 5, date: '2026-05-07' },
+  { battleId: 1005, result: 'win', problem: '?쇰낫?섏튂', opponent: 'codeWolf', time: '05:14', submit: 2, date: '2026-05-05' },
+  { battleId: 1004, result: 'win', problem: 'BFS ?먯깋', opponent: 'byte_king', time: '06:39', submit: 2, date: '2026-05-03' },
+  { battleId: 1003, result: 'lose', problem: '???섏쓽 ??, opponent: 'night_owl', time: '10:05', submit: 7, date: '2026-05-01' },
+  { battleId: 1002, result: 'win', problem: '?숈쟻 ?꾨줈洹몃옒諛?, opponent: 'devKing', time: '11:20', submit: 3, date: '2026-04-28' },
+  { battleId: 1001, result: 'lose', problem: 'BFS ?먯깋', opponent: 'codeWolf', time: '14:55', submit: 8, date: '2026-04-25' }
 ];
 
 const PAGE_SIZE = 8;
@@ -68,17 +70,17 @@ function renderTable(data, page) {
     tr.innerHTML = `
       <td class="px-5 py-4">
         <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${isWin ? 'badge-win' : 'badge-lose'}">
-          ${isWin ? '승리' : '패배'}
+          ${isWin ? '?밸━' : '?⑤같'}
         </span>
       </td>
       <td class="px-5 py-4 font-code-md text-body-sm text-primary font-bold">#${record.battleId}</td>
       <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface font-medium">${record.problem}</td>
       <td class="px-5 py-4 font-code-md text-body-sm text-secondary">${record.opponent}</td>
       <td class="px-5 py-4 font-code-md text-body-sm text-on-surface">${record.time}</td>
-      <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface text-center">${record.submit}회</td>
+      <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface text-center">${record.submit}??/td>
       <td class="px-5 py-4 font-body-sm text-body-sm text-secondary">${record.date}</td>
       <td class="px-5 py-4">
-        <button type="button" class="btn-detail" data-record-key="${encodeURIComponent(key)}">상세보기</button>
+        <button type="button" class="btn-detail" data-record-key="${encodeURIComponent(key)}">?곸꽭蹂닿린</button>
       </td>
     `;
     tbody.appendChild(tr);

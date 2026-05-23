@@ -1,13 +1,16 @@
+﻿authGuard();
+
 const darkModeToggle = document.getElementById('darkModeToggle');
 const nicknameInput = document.getElementById('nicknameInput');
 
 async function loadSettingsProfile() {
-  if (!nicknameInput || !localStorage.getItem('access_token')) return;
-
   try {
     const user = await getMe();
-    nicknameInput.value = user.nickname || '';
+    if (nicknameInput) nicknameInput.value = user.nickname || '';
   } catch (error) {
+    console.warn(error.message);
+  }
+} catch (error) {
     console.warn(error.message);
   }
 }
