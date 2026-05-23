@@ -7,11 +7,61 @@
 <script src="/js/history-tailwind.config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="/css/history.css" rel="stylesheet"/>
+<link href="/css/history.css?v=20260523-2" rel="stylesheet"/>
 </head>
 <body class="bg-surface font-body-md text-on-surface">
 
 <div id="navbar-container"></div>
+
+<div id="history-detail-backdrop" class="history-detail-backdrop" aria-hidden="true" hidden></div>
+<aside id="history-detail-drawer" class="history-detail-drawer" aria-hidden="true" hidden>
+  <div class="history-drawer-header">
+    <div>
+      <p id="drawer-battle-id" class="history-drawer-kicker">경기 상세</p>
+      <h2 id="drawer-problem" class="history-drawer-title">-</h2>
+    </div>
+    <button id="drawer-close" type="button" class="history-drawer-close" aria-label="상세 닫기">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <span id="drawer-result-badge" class="inline-block px-4 py-2 rounded-full text-sm font-bold badge-empty">-</span>
+
+  <div class="history-drawer-info">
+    <div class="history-drawer-info-row">
+      <span>상대</span>
+      <strong id="drawer-opponent">-</strong>
+    </div>
+    <div class="history-drawer-info-row">
+      <span>시작</span>
+      <strong id="drawer-start">-</strong>
+    </div>
+    <div class="history-drawer-info-row">
+      <span>종료</span>
+      <strong id="drawer-end">-</strong>
+    </div>
+    <div class="history-drawer-info-row">
+      <span>소요 시간</span>
+      <strong id="drawer-time" class="text-primary">-</strong>
+    </div>
+  </div>
+
+  <section class="history-drawer-section">
+    <h3>
+      <span class="material-symbols-outlined">person</span>
+      내 제출
+    </h3>
+    <div id="drawer-my-submissions"></div>
+  </section>
+
+  <section class="history-drawer-section">
+    <h3>
+      <span class="material-symbols-outlined">person_outline</span>
+      상대 제출
+    </h3>
+    <div id="drawer-opp-submissions"></div>
+  </section>
+</aside>
 
 <main class="max-w-[1280px] mx-auto px-5 py-10">
   <div class="mb-8">
@@ -54,10 +104,10 @@
 
       <select id="filter-problem" class="filter-input">
         <option value="">문제 전체</option>
-        <option value="두 수의 합">두 수의 합</option>
-        <option value="그리디 연습">그리디 연습</option>
-        <option value="피보나치">피보나치</option>
-        <option value="BFS 탐색">BFS 탐색</option>
+        <option value="A+B">A+B</option>
+        <option value="배열 합">배열 합</option>
+        <option value="괄호 검사">괄호 검사</option>
+        <option value="최단 경로">최단 경로</option>
         <option value="동적 프로그래밍">동적 프로그래밍</option>
       </select>
 
@@ -109,6 +159,6 @@
 <script src="/js/config.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/navbar.js"></script>
-<script src="/js/history.js"></script>
+<script src="/js/history.js?v=20260523-2"></script>
 </body>
 </html>

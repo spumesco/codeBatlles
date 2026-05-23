@@ -1,8 +1,8 @@
 ﻿authGuard();
 
 const DETAIL_DATA = {
-  '???섏쓽 ??devKing_2026-05-18': {
-    problem: '???섏쓽 ??,
+  '1012_A+B_devKing_2026-05-18': {
+    problem: 'A+B',
     result: 'win',
     opponent: 'devKing',
     start: '2026-05-18 21:10',
@@ -17,8 +17,8 @@ const DETAIL_DATA = {
       { lang: 'Java', verdict: 'Wrong Answer', at: '21:13' }
     ]
   },
-  '洹몃━???곗뒿_codeWolf_2026-05-17': {
-    problem: '洹몃━???곗뒿',
+  '1011_배열 합_codeWolf_2026-05-17': {
+    problem: '배열 합',
     result: 'lose',
     opponent: 'codeWolf',
     start: '2026-05-17 19:00',
@@ -34,6 +34,20 @@ const DETAIL_DATA = {
       { lang: 'C++', verdict: 'Wrong Answer', at: '19:03' },
       { lang: 'C++', verdict: 'Accepted', at: '19:06' }
     ]
+  },
+  '1010_괄호 검사_algo_pro_2026-05-15': {
+    problem: '괄호 검사',
+    result: 'win',
+    opponent: 'algo_pro',
+    start: '2026-05-15 20:20',
+    end: '2026-05-15 20:23',
+    time: '03:05',
+    mySubmits: [
+      { lang: 'Python', verdict: 'Accepted', at: '20:23' }
+    ],
+    oppSubmits: [
+      { lang: 'C++', verdict: 'Compilation Error', at: '20:22' }
+    ]
   }
 };
 
@@ -47,7 +61,7 @@ function verdictClass(verdict) {
 
 function renderSubmits(list) {
   if (!list || list.length === 0) {
-    return '<p class="text-secondary text-sm">?쒖텧 湲곕줉 ?놁쓬</p>';
+    return '<p class="text-secondary text-sm">제출 기록 없음</p>';
   }
 
   return list.map((submit, index) => `
@@ -64,7 +78,7 @@ function renderDetail(data) {
   const badge = document.getElementById('result-badge');
   const isWin = data.result === 'win';
 
-  badge.textContent = data.result ? (isWin ? '?밸━' : '?⑤같') : '-';
+  badge.textContent = data.result ? (isWin ? '승리' : '패배') : '-';
   badge.className = `inline-block px-4 py-2 rounded-full text-sm font-bold ${data.result ? (isWin ? 'badge-win' : 'badge-lose') : 'badge-empty'}`;
 
   document.getElementById('detail-problem').textContent = data.problem || '-';
@@ -92,7 +106,7 @@ function getFallbackDetail() {
 const backButton = document.getElementById('btn-back');
 if (backButton) {
   backButton.addEventListener('click', () => {
-    history.back();
+    window.location.href = '/history';
   });
 }
 

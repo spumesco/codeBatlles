@@ -99,6 +99,11 @@ def history_page():
     return FileResponse(PAGES_DIR / "history.html")
 
 
+@app.get("/history-detail")
+def history_detail_page():
+    return FileResponse(PAGES_DIR / "history_detail.html")
+
+
 @app.get("/ranking")
 def ranking_page():
     return FileResponse(PAGES_DIR / "ranking.html")

@@ -1,4 +1,4 @@
-ffrom datetime import datetime
+from datetime import datetime
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
