@@ -1,16 +1,8 @@
-<header class="bg-surface sticky top-0 z-50 border-b border-outline-variant">
-  <div class="flex justify-between items-center h-16 w-full max-w-container-max mx-auto px-gutter">
-    <div class="flex items-center gap-xl">
-      <a class="font-display text-h2 font-bold text-primary tracking-tight" href="/">CodeBattles</a>
-      <nav class="hidden md:flex items-center gap-lg h-full">
-        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/main">배틀하기</a>
-        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/history">기록</a>
-        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/ranking">랭킹</a>
-        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/settings">설정</a>
-      </nav>
-    </div>
-    <div class="flex items-center gap-md">
-      <button onclick="location.href='/login'" class="font-body-md text-body-md px-md py-sm bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container active:scale-95 transition-all">로그인</button>
+<header class="site-navbar bg-surface sticky top-0 z-50 border-b border-outline-variant">
+  <div class="navbar-inner flex justify-between items-center h-16 w-full max-w-container-max mx-auto px-gutter">
+    <a class="nav-logo font-display text-h2 font-bold text-primary tracking-tight" href="/">CodeBattles</a>
+    <div class="nav-right flex items-center gap-md">
+      <button type="button" onclick="location.href='/login'" class="btn-logout font-body-md text-body-md px-md py-sm bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container active:scale-95 transition-all">로그인</button>
     </div>
   </div>
 </header>

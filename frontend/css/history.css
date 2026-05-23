@@ -1,0 +1,151 @@
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+body {
+  background-color: #fcf9f8;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 20px;
+  background-color: #c1c6d7;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+.stat-win {
+  color: #065f46;
+}
+
+.stat-lose {
+  color: #991b1b;
+}
+
+.table-head {
+  background: #f0edec;
+}
+
+.search-icon {
+  font-size: 18px;
+}
+
+.empty-icon {
+  font-size: 40px;
+  color: #c1c6d7;
+}
+
+.filter-tab {
+  padding: 6px 18px;
+  border-radius: 0.5rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1.5px solid #c1c6d7;
+  color: #5e5e5e;
+  background: #fcf9f8;
+}
+
+.filter-tab:hover {
+  border-color: #0058bc;
+  color: #0058bc;
+}
+
+.filter-tab.active {
+  background: #0058bc;
+  color: #ffffff;
+  border-color: #0058bc;
+}
+
+.record-row {
+  transition: background 0.12s;
+  cursor: pointer;
+}
+
+.record-row:hover {
+  background: #f0edec;
+}
+
+.badge-win {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.badge-lose {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.btn-detail {
+  padding: 4px 12px;
+  border-radius: 0.25rem;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid #c1c6d7;
+  color: #414755;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.btn-detail:hover {
+  border-color: #0058bc;
+  color: #0058bc;
+}
+
+.filter-input {
+  border: 1.5px solid #c1c6d7;
+  border-radius: 0.5rem;
+  padding: 7px 12px;
+  font-size: 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #1c1b1b;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.filter-input:focus {
+  border-color: #0058bc;
+}
+
+.page-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #c1c6d7;
+  color: #5e5e5e;
+  background: #ffffff;
+  transition: all 0.12s;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.page-btn:hover {
+  border-color: #0058bc;
+  color: #0058bc;
+}
+
+.page-btn.active {
+  background: #0058bc;
+  color: #ffffff;
+  border-color: #0058bc;
+}
+
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

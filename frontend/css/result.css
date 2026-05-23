@@ -1,4 +1,8 @@
-/* ===== result.html CSS ===== */
+body {
+  background-color: #fcf9f8;
+  margin: 0;
+  padding: 0;
+}
 
 .result-wrap {
   max-width: 700px;
@@ -21,13 +25,42 @@
   background: linear-gradient(135deg, #fff1f2, #fcf9f8);
 }
 
+.result-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.result-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.result-win {
+  color: #16a34a;
+}
+
+.result-description {
+  color: #717786;
+  font-size: 0.9rem;
+}
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid #c1c6d7;
   border-radius: 8px;
   padding: 1.5rem;
@@ -53,6 +86,35 @@
 .info-label {
   color: #717786;
   min-width: 80px;
+}
+
+.info-value {
+  color: #1c1b1b;
+}
+
+.code-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+.strong-value {
+  font-weight: 700;
+}
+
+.text-primary {
+  color: #0058bc;
+}
+
+.accepted-text {
+  color: #16a34a;
+}
+
+.wrong-text {
+  color: #dc2626;
+}
+
+.muted-code {
+  color: #717786;
 }
 
 .submit-grid {
@@ -83,4 +145,37 @@
   margin-bottom: 0.4rem;
 }
 
-.submit-label { color: #717786; }
+.submit-label {
+  color: #717786;
+}
+
+.record-change {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.change-arrow {
+  color: #0058bc;
+  font-size: 1.2rem;
+}
+
+.main-button {
+  margin-top: 1rem;
+  text-decoration: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .submit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .record-change {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

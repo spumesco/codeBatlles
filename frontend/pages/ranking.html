@@ -4,119 +4,17 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/js/ranking-tailwind.config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        colors: {
-          "primary-container": "#0070eb",
-          "primary": "#0058bc",
-          "outline-variant": "#c1c6d7",
-          "secondary": "#5e5e5e",
-          "on-primary": "#ffffff",
-          "on-surface": "#1c1b1b",
-          "surface": "#fcf9f8",
-          "surface-container": "#f0edec",
-          "surface-container-low": "#f6f3f2",
-          "surface-container-lowest": "#ffffff",
-          "primary-fixed": "#d8e2ff",
-          "outline": "#717786"
-        },
-        borderRadius: {
-          DEFAULT: "0.125rem",
-          lg: "0.25rem",
-          xl: "0.5rem",
-          full: "0.75rem"
-        },
-        spacing: {
-          base: "4px",
-          sm: "8px",
-          md: "16px",
-          "container-max": "1280px",
-          lg: "24px",
-          xl: "48px",
-          xs: "4px",
-          gutter: "20px"
-        },
-        fontFamily: {
-          "code-md": ["JetBrains Mono"],
-          "body-sm": ["Space Grotesk"],
-          "body-md": ["Space Grotesk"],
-          h1: ["Space Grotesk"],
-          h2: ["Space Grotesk"],
-          display: ["Space Grotesk"],
-          "label-md": ["Space Grotesk"]
-        },
-        fontSize: {
-          "code-md": ["14px", {"lineHeight": "1.7", "fontWeight": "400"}],
-          "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
-          "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
-          h1: ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
-          h2: ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
-          display: ["48px", {"lineHeight": "1.1", "fontWeight": "700"}],
-          "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}]
-        }
-      }
-    }
-  }
-</script>
-<style>
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  }
-  body { background-color: #fcf9f8; margin: 0; padding: 0; }
-  .ranking-row { transition: background 0.12s; }
-  .ranking-row:hover { background: #f0edec; }
-  .rank-badge {
-    width: 34px;
-    height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    border: 1px solid #c1c6d7;
-    background: #fff;
-  }
-  .rank-1 { background: #fff7d6; border-color: #f1c84b; color: #8a5a00; }
-  .rank-2 { background: #eef2f7; border-color: #b8c1ce; color: #475569; }
-  .rank-3 { background: #ffe8d5; border-color: #f0a46a; color: #8b3f12; }
-  .stat-card {
-    background: #ffffff;
-    border: 1px solid #c1c6d7;
-    border-radius: 8px;
-    padding: 20px;
-  }
-  .table-wrap {
-    background: #ffffff;
-    border: 1px solid #c1c6d7;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .filter-input {
-    border: 1.5px solid #c1c6d7;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 14px;
-    font-family: 'Space Grotesk', sans-serif;
-    color: #1c1b1b;
-    background: #fff;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .filter-input:focus { border-color: #0058bc; }
-</style>
+<link href="/css/ranking.css" rel="stylesheet"/>
 </head>
 <body class="bg-surface font-body-md text-on-surface">
 
 <div id="navbar-container"></div>
 
-<main class="max-w-[1280px] mx-auto px-5 py-10">
-  <div class="mb-8">
+<main class="ranking-page max-w-[1280px] mx-auto px-5 py-10">
+  <div class="ranking-heading mb-8">
     <h1 class="font-h1 text-h1 text-on-surface mb-1">랭킹</h1>
     <p class="font-body-sm text-body-sm text-secondary">승리 수와 승률을 기준으로 현재 사용자 순위를 확인합니다.</p>
   </div>
@@ -143,7 +41,7 @@
   <section class="stat-card mb-6">
     <div class="flex flex-col md:flex-row md:items-center gap-3">
       <div class="relative flex-1">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary" style="font-size:18px;">search</span>
+        <span class="material-symbols-outlined search-icon absolute left-3 top-1/2 -translate-y-1/2 text-secondary">search</span>
         <input id="search-input" class="filter-input w-full pl-9" type="text" placeholder="닉네임 또는 ID 검색"/>
       </div>
       <select id="sort-select" class="filter-input">
@@ -157,7 +55,7 @@
   <section class="table-wrap">
     <table class="w-full">
       <thead>
-        <tr class="border-b border-outline-variant" style="background:#f0edec;">
+        <tr class="ranking-table-head border-b border-outline-variant">
           <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase">순위</th>
           <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase">닉네임</th>
           <th class="text-left px-5 py-3 font-label-md text-label-md text-secondary uppercase">ID</th>
@@ -170,91 +68,15 @@
       <tbody id="ranking-tbody"></tbody>
     </table>
     <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-secondary">
-      <span class="material-symbols-outlined mb-3" style="font-size:40px; color:#c1c6d7;">leaderboard</span>
+      <span class="material-symbols-outlined empty-icon mb-3">leaderboard</span>
       <p class="font-body-md text-body-md">검색 결과가 없습니다.</p>
     </div>
   </section>
 </main>
 
-<script>
-  fetch('../components/user-navbar.html')
-    .then(res => res.text())
-    .then(html => { document.getElementById('navbar-container').innerHTML = html; });
-
-  const RANKINGS = [
-    { nickname: 'devKing', userId: 'user02', wins: 31, loses: 8 },
-    { nickname: 'algo_pro', userId: 'user07', wins: 28, loses: 9 },
-    { nickname: 'byte_king', userId: 'user11', wins: 24, loses: 10 },
-    { nickname: '철몽', userId: 'user01', wins: 21, loses: 12 },
-    { nickname: 'codeWolf', userId: 'user04', wins: 18, loses: 15 },
-    { nickname: 'night_owl', userId: 'user09', wins: 16, loses: 13 },
-    { nickname: 'pythonista', userId: 'user15', wins: 12, loses: 11 },
-    { nickname: 'fastapi_user', userId: 'user20', wins: 9, loses: 14 }
-  ];
-
-  const tbody = document.getElementById('ranking-tbody');
-  const emptyState = document.getElementById('empty-state');
-  const searchInput = document.getElementById('search-input');
-  const sortSelect = document.getElementById('sort-select');
-
-  function winRate(user) {
-    const total = user.wins + user.loses;
-    return total === 0 ? 0 : Math.round((user.wins / total) * 1000) / 10;
-  }
-
-  function updateStats(data) {
-    const totalBattles = data.reduce((sum, user) => sum + user.wins + user.loses, 0);
-    const bestRate = data.length ? Math.max(...data.map(winRate)) : 0;
-    document.getElementById('stat-users').textContent = data.length;
-    document.getElementById('stat-battles').textContent = totalBattles;
-    document.getElementById('stat-rate').textContent = `${bestRate}%`;
-  }
-
-  function sortData(data) {
-    const sortBy = sortSelect.value;
-    return [...data].sort((a, b) => {
-      if (sortBy === 'rate') return winRate(b) - winRate(a) || b.wins - a.wins;
-      if (sortBy === 'battles') return (b.wins + b.loses) - (a.wins + a.loses) || b.wins - a.wins;
-      return b.wins - a.wins || winRate(b) - winRate(a);
-    });
-  }
-
-  function render() {
-    const keyword = searchInput.value.trim().toLowerCase();
-    const filtered = RANKINGS.filter(user =>
-      user.nickname.toLowerCase().includes(keyword) ||
-      user.userId.toLowerCase().includes(keyword)
-    );
-    const sorted = sortData(filtered);
-
-    tbody.innerHTML = '';
-    emptyState.classList.toggle('hidden', sorted.length !== 0);
-
-    sorted.forEach((user, index) => {
-      const rank = index + 1;
-      const total = user.wins + user.loses;
-      const badgeClass = rank <= 3 ? `rank-${rank}` : '';
-      const tr = document.createElement('tr');
-      tr.className = 'ranking-row border-b border-outline-variant last:border-0';
-      tr.innerHTML = `
-        <td class="px-5 py-4"><span class="rank-badge ${badgeClass}">#${rank}</span></td>
-        <td class="px-5 py-4 font-body-md text-body-md text-on-surface font-bold">${user.nickname}</td>
-        <td class="px-5 py-4 font-code-md text-body-sm text-secondary">${user.userId}</td>
-        <td class="px-5 py-4 font-code-md text-body-sm" style="color:#065f46;">${user.wins}</td>
-        <td class="px-5 py-4 font-code-md text-body-sm" style="color:#991b1b;">${user.loses}</td>
-        <td class="px-5 py-4 font-code-md text-body-sm text-primary font-bold">${winRate(user)}%</td>
-        <td class="px-5 py-4 font-code-md text-body-sm text-on-surface">${total}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    updateStats(sorted);
-  }
-
-  searchInput.addEventListener('input', render);
-  sortSelect.addEventListener('change', render);
-  render();
-</script>
-
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/navbar.js"></script>
+<script src="/js/ranking.js"></script>
 </body>
 </html>

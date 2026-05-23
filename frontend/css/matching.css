@@ -1,5 +1,11 @@
 /* ===== matching.html CSS ===== */
 
+body {
+  background-color: #fcf9f8;
+  margin: 0;
+  padding: 0;
+}
+
 .matching-wrap {
   display: flex;
   flex-direction: column;
@@ -36,7 +42,8 @@
   margin-bottom: 2rem;
 }
 
-.timer-box {
+.timer-box,
+.wait-card {
   background: #fff;
   border: 1px solid #c1c6d7;
   border-radius: 8px;
@@ -59,6 +66,10 @@
   letter-spacing: 0.05em;
 }
 
+.dots {
+  margin-left: 6px;
+}
+
 .dots span {
   display: inline-block;
   width: 7px;
@@ -75,4 +86,20 @@
 @keyframes bounce {
   0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
   40% { transform: scale(1); opacity: 1; }
+}
+.match-cancel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  height: 40px;
+  text-decoration: none;
+  background-color: #0058bc;
+  color: #ffffff;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.match-cancel-button:hover {
+  background-color: #0070eb;
 }

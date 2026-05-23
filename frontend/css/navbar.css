@@ -40,9 +40,15 @@ header {
 }
 
 .nav-links {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .nav-links {
+    display: flex;
+  }
 }
 
 .nav-links a {
