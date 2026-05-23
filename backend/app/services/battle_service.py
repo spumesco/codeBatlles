@@ -1,10 +1,12 @@
-import asyncio
-from typing import Optional
+ffrom datetime import datetime
 
-from app.database import AsyncSessionLocal
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.battle import Battle
+from app.models.user import User
 from app.repositories.battle_repository import BattleRepository
 from app.repositories.problem_repository import ProblemRepository
-from app.repositories.user_repository import UserRepository
 from app.repositories.submission_repository import SubmissionRepository
 from app.services.judge_service import JudgeService
 from app.services.websocket_manager import ws_manager
@@ -12,13 +14,13 @@ from app.services.websocket_manager import ws_manager
 
 class BattleService:
     @staticmethod
-    async def start_battle_check(db, battle_id: int) -> None:
+    async def start_battle_check(db: AsyncSession, battle_id: int) -> None:
         await BattleRepository.start_battle(db, battle_id)
         await ws_manager.broadcast_to_battle(battle_id, {"type": "battle_start"})
 
     @staticmethod
     async def process_submission(
-        db, battle_id: int, user_pk: int, source_code: str, language: str
+        db: AsyncSession, battle_id: int, user_pk: int, source_code: str, language: str
     ) -> dict:
         battle = await BattleRepository.get_battle(db, battle_id)
         if not battle:
@@ -58,23 +60,41 @@ class BattleService:
         return judge_result
 
     @staticmethod
-    async def end_battle(db, battle_id: int, winner_id: Optional[int]) -> None:
-        battle = await BattleRepository.get_battle(db, battle_id)
+    async def end_battle(db: AsyncSession, battle_id: int, winner_id: int) -> None:
+        result = await db.execute(select(Battle).where(Battle.id == battle_id))
+        battle = result.scalar_one_or_none()
+        
         if not battle:
             return
 
-        await BattleRepository.finish_battle(db, battle_id, winner_id)
+        await db.execute(
+            update(Battle)
+            .where(Battle.id == battle_id)
+            .values(
+                winner_id=winner_id,
+                status="finished",
+                finished_at=datetime.utcnow(),
+            )
+        )
 
-        player1_id = getattr(battle, "player1_id", None)
-        player2_id = getattr(battle, "player2_id", None)
+        await db.execute(
+            update(User)
+            .where(User.id == winner_id)
+            .values(
+                win_count=User.win_count + 1,
+                is_battling=False,
+            )
+        )
 
-        if player1_id:
-            await UserRepository.update_battling_status(db, player1_id, False)
-        if player2_id:
-            await UserRepository.update_battling_status(db, player2_id, False)
+        loser_id = battle.player2_id if winner_id == battle.player1_id else battle.player1_id
+        await db.execute(
+            update(User)
+            .where(User.id == loser_id)
+            .values(
+                lose_count=User.lose_count + 1,
+                is_battling=False,
+            )
+        )
 
-        if winner_id and player1_id and player2_id:
-            loser_id = player2_id if winner_id == player1_id else player1_id
-            await UserRepository.update_win_lose(db, winner_id, loser_id)
-
+        await db.commit()
         await ws_manager.broadcast_battle_end(battle_id, winner_id)
