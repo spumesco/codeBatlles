@@ -26,10 +26,28 @@ async function loadNavbar() {
   }
 
   if (hasToken) {
+    bindLogoutButton();
     await hydrateUserNavbar();
   }
 
   return container;
+}
+
+function bindLogoutButton() {
+  const logoutButton = document.getElementById('btn-logout');
+  if (!logoutButton) return;
+
+  logoutButton.addEventListener('click', event => {
+    event.preventDefault();
+    logoutButton.disabled = true;
+
+    apiLogout().catch(error => {
+      console.warn(error.message);
+    });
+
+    clearToken();
+    window.location.replace('/');
+  });
 }
 
 async function hydrateUserNavbar() {
@@ -42,20 +60,6 @@ async function hydrateUserNavbar() {
     clearToken();
     window.location.href = '/login';
     return;
-  }
-
-  const logoutButton = document.getElementById('btn-logout');
-  if (logoutButton) {
-    logoutButton.addEventListener('click', async () => {
-      try {
-        await apiLogout();
-      } catch (error) {
-        console.warn(error.message);
-      } finally {
-        clearToken();
-        window.location.href = '/login';
-      }
-    });
   }
 }
 
