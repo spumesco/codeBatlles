@@ -7,6 +7,10 @@ function ensureNavbarStyles() {
   document.head.appendChild(link);
 }
 
+function isAdminUser(user) {
+  return String(user?.role || '').trim().toLowerCase() === 'admin';
+}
+
 async function loadNavbar() {
   const container = document.getElementById('navbar-container');
   if (!container) return null;
@@ -14,7 +18,22 @@ async function loadNavbar() {
   ensureNavbarStyles();
 
   const hasToken = Boolean(getToken());
-  const navbarPath = hasToken ? '/components/user-navbar.html' : '/components/guest-navbar.html';
+  let currentUser = null;
+  let navbarPath = '/components/guest-navbar.html';
+
+  if (hasToken) {
+    try {
+      currentUser = await getMe();
+      navbarPath = isAdminUser(currentUser)
+        ? '/components/admin-navbar.html'
+        : '/components/user-navbar.html';
+    } catch (error) {
+      console.warn(error.message);
+      clearToken();
+      window.location.href = '/login';
+      return null;
+    }
+  }
 
   try {
     const response = await fetch(`${navbarPath}?v=${Date.now()}`, { cache: 'no-store' });
@@ -27,7 +46,7 @@ async function loadNavbar() {
 
   if (hasToken) {
     bindLogoutButton();
-    await hydrateUserNavbar();
+    hydrateUserNavbar(currentUser);
   }
 
   return container;
@@ -50,28 +69,11 @@ function bindLogoutButton() {
   });
 }
 
-async function hydrateUserNavbar() {
-  try {
-    const user = await getMe();
-    const nickname = document.getElementById('navbar-nickname');
-    if (nickname) nickname.textContent = user.nickname;
+function hydrateUserNavbar(user) {
+  if (!user) return;
 
-    if (user.role === 'admin') {
-      const navLinks = document.querySelector('.nav-links');
-      if (navLinks && !navLinks.querySelector('a[href="/admin-problems"]')) {
-        const adminLink = document.createElement('a');
-        adminLink.href = '/admin-problems';
-        adminLink.className = 'font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors';
-        adminLink.textContent = '관리자';
-        navLinks.appendChild(adminLink);
-      }
-    }
-  } catch (error) {
-    console.warn(error.message);
-    clearToken();
-    window.location.href = '/login';
-    return;
-  }
+  const nickname = document.getElementById('navbar-nickname');
+  if (nickname) nickname.textContent = user.nickname || (isAdminUser(user) ? '관리자' : '-');
 }
 
 window.navbarReady = loadNavbar();

@@ -5,6 +5,13 @@ const nicknameInput = document.getElementById('nicknameInput');
 const saveBtn = document.getElementById('btn-save');
 const cancelBtn = document.getElementById('btn-cancel');
 
+function applyTheme(isDark) {
+  document.documentElement.classList.toggle('light', !isDark);
+  document.documentElement.classList.toggle('dark', isDark);
+  document.body.classList.toggle('dark-preview', isDark);
+  localStorage.setItem(THEME_STORAGE_KEY, isDark ? 'dark' : 'light');
+}
+
 async function loadSettingsProfile() {
   try {
     const user = await getMe();
@@ -17,11 +24,14 @@ async function loadSettingsProfile() {
 async function saveSettings() {
   const nickname = nicknameInput?.value.trim();
   if (!nickname) {
-    alert('닉네임을 입력���주세요.');
+    alert('닉네임을 입력해주세요.');
     return;
   }
 
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '저장 중...'; }
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = '저장 중...';
+  }
 
   try {
     await apiRequest('/users/me/nickname', {
@@ -32,7 +42,10 @@ async function saveSettings() {
   } catch (error) {
     alert(error.message);
   } finally {
-    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '저장'; }
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '저장';
+    }
   }
 }
 
@@ -45,8 +58,12 @@ if (cancelBtn) {
 }
 
 if (darkModeToggle) {
+  const isDark = localStorage.getItem(THEME_STORAGE_KEY) !== 'light';
+  darkModeToggle.checked = isDark;
+  applyTheme(isDark);
+
   darkModeToggle.addEventListener('change', () => {
-    document.body.classList.toggle('dark-preview', darkModeToggle.checked);
+    applyTheme(darkModeToggle.checked);
   });
 }
 

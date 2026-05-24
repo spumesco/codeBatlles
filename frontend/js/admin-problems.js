@@ -86,9 +86,38 @@ async function loadAdminNavbar() {
     const response = await fetch('/components/admin-navbar.html?v=' + Date.now(), { cache: 'no-store' });
     if (!response.ok) throw new Error(`admin-navbar load failed: ${response.status}`);
     container.innerHTML = await response.text();
+    await hydrateAdminNavbar();
+    bindAdminNavbarLogout();
   } catch (error) {
     console.warn(error.message);
   }
+}
+
+async function hydrateAdminNavbar() {
+  try {
+    const user = await getMe();
+    const nickname = document.getElementById('navbar-nickname');
+    if (nickname) nickname.textContent = user.nickname || '관리자';
+  } catch (error) {
+    console.warn(error.message);
+  }
+}
+
+function bindAdminNavbarLogout() {
+  const logoutButton = document.getElementById('btn-logout');
+  if (!logoutButton) return;
+
+  logoutButton.addEventListener('click', event => {
+    event.preventDefault();
+    logoutButton.disabled = true;
+
+    apiLogout().catch(error => {
+      console.warn(error.message);
+    });
+
+    clearToken();
+    window.location.replace('/');
+  });
 }
 
 function bindAdminProblemEvents() {
