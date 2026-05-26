@@ -110,6 +110,8 @@ async function joinQueue() {
 }
 
 /* ── 1v1 배틀 신청 전송 ── */
+let sentRequestId = null;  // 취소 시 사용
+
 async function sendBattleRequest() {
   if (!targetUserId) {
     alert('상대방 정보가 없습니다.');
@@ -117,10 +119,11 @@ async function sendBattleRequest() {
     return;
   }
   try {
-    await apiRequest('/match/request', {
+    const result = await apiRequest('/match/request', {
       method: 'POST',
       body: JSON.stringify({ target_user_id: targetUserId }),
     });
+    sentRequestId = result.request_id;
     // 수락 대기 — WS로 match_found 또는 battle_rejected 수신
   } catch (error) {
     alert(error.message);
@@ -140,7 +143,17 @@ async function cancelMatching(e) {
     lobbyWs = null;
   }
 
-  if (mode !== 'request') {
+  if (mode === 'request') {
+    /* 1v1 신청 취소 — 서버에서 pending 요청 삭제 */
+    if (sentRequestId) {
+      try {
+        await apiRequest(`/match/request/${sentRequestId}`, { method: 'DELETE' });
+      } catch (err) {
+        console.warn('신청 취소 실패:', err.message);
+      }
+    }
+  } else {
+    /* 자동 매칭 큐 이탈 */
     try {
       await apiRequest('/match/queue', { method: 'DELETE' });
     } catch (err) {

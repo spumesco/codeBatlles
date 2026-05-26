@@ -37,13 +37,17 @@ async def lobby_ws(
     except (WebSocketDisconnect, Exception):
         pass
     finally:
-        ws_manager.disconnect_lobby(user_id)
-        # 새 DB 세션으로 오프라인 처리 (기존 세션이 만료됐을 수 있으므로)
-        try:
-            async with AsyncSessionLocal() as fresh_db:
-                await UserRepository.update_online_status(fresh_db, user_id, False)
-        except Exception as e:
-            print(f"[lobby_ws] 오프라인 상태 업데이트 실패 user_id={user_id}: {e}")
+        # 현재 저장된 WS 와 같은 객체일 때만 제거
+        # → 페이지 이동 시 새 연결이 먼저 등록된 경우 새 연결을 건드리지 않음
+        ws_manager.disconnect_lobby(user_id, websocket)
+
+        # 새 연결이 없을 때만 오프라인으로 변경
+        if user_id not in ws_manager.lobby_connections:
+            try:
+                async with AsyncSessionLocal() as fresh_db:
+                    await UserRepository.update_online_status(fresh_db, user_id, False)
+            except Exception as e:
+                print(f"[lobby_ws] 오프라인 상태 업데이트 실패 user_id={user_id}: {e}")
 
 
 @router.websocket("/ws/battles/{battle_id}")

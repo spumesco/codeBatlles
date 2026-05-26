@@ -11,8 +11,13 @@ class WebSocketManager:
         await ws.accept()
         self.lobby_connections[user_pk] = ws
 
-    def disconnect_lobby(self, user_pk: int) -> None:
-        self.lobby_connections.pop(user_pk, None)
+    def disconnect_lobby(self, user_pk: int, ws: WebSocket = None) -> None:
+        """ws 를 넘기면 현재 저장된 연결과 동일한 객체일 때만 제거한다.
+        새 연결이 이미 등록된 경우 이전 연결의 disconnect 가 새 연결을 지우지 않도록 한다."""
+        if ws is None:
+            self.lobby_connections.pop(user_pk, None)
+        elif self.lobby_connections.get(user_pk) is ws:
+            self.lobby_connections.pop(user_pk, None)
 
     async def connect_battle(self, battle_id: int, user_pk: int, ws: WebSocket) -> None:
         await ws.accept()
