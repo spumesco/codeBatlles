@@ -7,19 +7,11 @@
         <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/history">기록</a>
         <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/ranking">랭킹</a>
         <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/settings">설정</a>
+        <a id="navbar-admin-link" class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors hidden" href="/admin-problems">문제 설정</a>
       </nav>
     </div>
     <div class="nav-right battle-nav-status flex items-center gap-lg flex-shrink-0">
-      <div class="hidden xl:flex items-center gap-md min-w-0">
-        <span class="font-body-md text-body-md font-bold text-on-surface">나 철몽</span>
-        <span class="font-code-md text-sm text-green-600">3승</span>
-        <span class="font-code-md text-sm text-red-600">2패</span>
-        <span class="text-outline font-bold mx-sm">VS</span>
-        <span class="font-body-md text-body-md font-bold text-on-surface">상대: 김건한</span>
-        <span class="font-code-md text-sm text-green-600">5승</span>
-        <span class="font-code-md text-sm text-red-600">1패</span>
-      </div>
-      <span class="hidden sm:inline font-body-md text-body-md text-secondary">상태: <strong class="text-green-600">진행 중</strong></span>
+      <span id="navbar-nickname" class="hidden xl:inline font-body-md text-body-md font-bold text-on-surface">-</span>
       <span class="timer" id="timer">00:00</span>
       <button id="toggleDrawer" onclick="toggleDrawer()" class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:border-primary hover:text-primary transition-all">문제 보기</button>
     </div>

@@ -3,7 +3,7 @@ authGuard();
 const params = new URLSearchParams(window.location.search);
 const mode = params.get('mode');
 const opponent = params.get('opponent') || '상대 사용자';
-const targetUserId = params.get('target'); // 배틀 신청 시 상대방 user_id
+const targetUserId = params.get('target');
 
 const waitTitle = document.getElementById('wait-title');
 const waitDescription = document.getElementById('wait-description');
@@ -37,12 +37,21 @@ function getWsUrl(path) {
   return `${proto}//${location.host}${path}`;
 }
 
-/* ── 로비 WebSocket 연결 ── */
+/* ── 로비 WebSocket — 자동 재연결 포함 ── */
 let lobbyWs = null;
+let wsReconnectTimer = null;
+let isDone = false;  // 매칭 완료/취소 후 재연결 방지
 
 function connectLobbyWs() {
+  if (isDone) return;
   const token = getToken();
   if (!token) return;
+
+  if (lobbyWs) {
+    lobbyWs.onclose = null;
+    lobbyWs.close();
+    lobbyWs = null;
+  }
 
   const url = getWsUrl(`/ws/lobby?token=${encodeURIComponent(token)}`);
   lobbyWs = new WebSocket(url);
@@ -51,8 +60,10 @@ function connectLobbyWs() {
     try {
       const data = JSON.parse(event.data);
       if (data.type === 'match_found') {
+        isDone = true;
         window.location.href = `/battle?battle_id=${data.battle_id}`;
       } else if (data.type === 'battle_rejected') {
+        isDone = true;
         alert('상대방이 배틀 신청을 거절했습니다.');
         window.location.href = '/main';
       }
@@ -62,7 +73,13 @@ function connectLobbyWs() {
   };
 
   lobbyWs.onerror = (err) => console.warn('lobby WS error', err);
-  lobbyWs.onclose = () => console.warn('lobby WS closed');
+
+  lobbyWs.onclose = () => {
+    if (isDone) return;
+    console.warn('matching WS disconnected — 3초 후 재연결');
+    lobbyWs = null;
+    wsReconnectTimer = setTimeout(connectLobbyWs, 3000);
+  };
 }
 
 /* ── 자동 매칭 큐 참가 ── */
@@ -70,10 +87,10 @@ async function joinQueue() {
   try {
     const result = await apiRequest('/match/queue', { method: 'POST' });
     if (result.status === 'matched') {
-      // 즉시 매칭된 경우
+      isDone = true;
       window.location.href = `/battle?battle_id=${result.battle_id}`;
     }
-    // 'waiting' 이면 WS로 match_found 수신 대기
+    // 'waiting' → WS로 match_found 대기
   } catch (error) {
     alert(error.message);
     window.location.href = '/main';
@@ -92,7 +109,7 @@ async function sendBattleRequest() {
       method: 'POST',
       body: JSON.stringify({ target_user_id: targetUserId }),
     });
-    // 수락 대기 — WS로 match_found 수신
+    // 수락 대기 — WS로 match_found 또는 battle_rejected 수신
   } catch (error) {
     alert(error.message);
     window.location.href = '/main';
@@ -102,10 +119,13 @@ async function sendBattleRequest() {
 /* ── 매칭 취소 ── */
 async function cancelMatching(e) {
   if (e) e.preventDefault();
+  isDone = true;
 
+  if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
   if (lobbyWs) {
     lobbyWs.onclose = null;
     lobbyWs.close();
+    lobbyWs = null;
   }
 
   if (mode !== 'request') {

@@ -68,6 +68,8 @@ async def request_battle(
         target = await UserRepository.get_user_by_nickname(db, body.target_user_id)
     if not target:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    if target.id == current_user.id:
+        raise HTTPException(status_code=400, detail="자기 자신에게 배틀을 신청할 수 없습니다.")
     if not target.is_online:
         raise HTTPException(status_code=400, detail="상대방이 오프라인입니다.")
     if target.is_battling:
