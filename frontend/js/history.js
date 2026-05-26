@@ -2,6 +2,7 @@ authGuard();
 
 const PAGE_SIZE = 8;
 let currentPage = 1;
+<<<<<<< Updated upstream
 let allData = [];   // API에서 받은 전체 데이터
 let filtered = [];  // 필터 적용 후 데이터
 
@@ -11,6 +12,33 @@ function formatDuration(secs) {
   const m = String(Math.floor(secs / 60)).padStart(2, '0');
   const s = String(secs % 60).padStart(2, '0');
   return `${m}:${s}`;
+=======
+let ALL_RECORDS = [];
+let filtered = [];
+
+function secsToTime(secs) {
+  if (secs == null) return '00:00';
+  const m = String(Math.floor(secs / 60)).padStart(2, '0');
+  const s = String(secs % 60).padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function updateStats(data) {
+  const total = data.length;
+  const wins = data.filter(r => r.result === 'win').length;
+  const loses = total - wins;
+  const rate = total ? `${Math.round((wins / total) * 100)}%` : '0%';
+
+  const avgSec = data.length
+    ? Math.round(data.reduce((acc, r) => acc + (r.duration_seconds || 0), 0) / data.length)
+    : 0;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-win').textContent = wins;
+  document.getElementById('stat-lose').textContent = loses;
+  document.getElementById('stat-rate').textContent = rate;
+  document.getElementById('stat-avg').textContent = secsToTime(avgSec);
+>>>>>>> Stashed changes
 }
 
 function verdictClass(verdict) {
@@ -28,13 +56,20 @@ function renderSubmits(list) {
   return list.map((sub, index) => `
     <div class="history-submit-row">
       <span class="history-submit-index">${index + 1}</span>
+<<<<<<< Updated upstream
       <span class="history-submit-lang">${sub.lang}</span>
       <span class="inline-block px-2 py-0.5 rounded text-xs font-bold ${verdictClass(sub.verdict)}">${sub.verdict}</span>
       <span class="history-submit-time">${sub.at}</span>
+=======
+      <span class="history-submit-lang">${sub.language || sub.lang || '-'}</span>
+      <span class="inline-block px-2 py-0.5 rounded text-xs font-bold ${verdictClass(sub.status || sub.verdict)}">${sub.status || sub.verdict}</span>
+      <span class="history-submit-time">${sub.submitted_at || sub.at || '-'}</span>
+>>>>>>> Stashed changes
     </div>
   `).join('');
 }
 
+<<<<<<< Updated upstream
 /* ── 통계 업데이트 ── */
 function updateStats(data) {
   const total = data.length;
@@ -68,6 +103,8 @@ function populateProblemFilter(data) {
 }
 
 /* ── 상세 드로어 (실제 API 호출) ── */
+=======
+>>>>>>> Stashed changes
 async function openDetailDrawer(record) {
   const drawer = document.getElementById('history-detail-drawer');
   const backdrop = document.getElementById('history-detail-backdrop');
@@ -79,6 +116,7 @@ async function openDetailDrawer(record) {
   drawer.setAttribute('aria-hidden', 'false');
   backdrop.setAttribute('aria-hidden', 'false');
 
+<<<<<<< Updated upstream
   // 로딩 상태
   document.getElementById('drawer-battle-id').textContent = `경기 #${record.battleId}`;
   document.getElementById('drawer-problem').textContent = '로딩 중...';
@@ -121,6 +159,36 @@ async function openDetailDrawer(record) {
     document.getElementById('drawer-problem').textContent = record.problem;
     document.getElementById('drawer-opponent').textContent = record.opponent;
     document.getElementById('drawer-time').textContent = record.time;
+=======
+  const isWin = record.result === 'win';
+  document.getElementById('drawer-battle-id').textContent = `경기 #${record.id}`;
+  document.getElementById('drawer-problem').textContent = record.problem_title || '-';
+  document.getElementById('drawer-opponent').textContent = record.opponent_nickname || '-';
+  document.getElementById('drawer-time').textContent = secsToTime(record.duration_seconds);
+  badge.textContent = isWin ? '승리' : '패배';
+  badge.className = `inline-block px-4 py-2 rounded-full text-sm font-bold ${isWin ? 'badge-win' : 'badge-lose'}`;
+
+  // Placeholder while loading detail
+  document.getElementById('drawer-start').textContent = '-';
+  document.getElementById('drawer-end').textContent = '-';
+  document.getElementById('drawer-my-submissions').innerHTML = '<p class="text-secondary text-sm">불러오는 중...</p>';
+  document.getElementById('drawer-opp-submissions').innerHTML = '<p class="text-secondary text-sm">불러오는 중...</p>';
+
+  try {
+    const detail = await apiRequest(`/battles/${record.id}/result`);
+    document.getElementById('drawer-start').textContent = detail.started_at
+      ? new Date(detail.started_at).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
+      : '-';
+    document.getElementById('drawer-end').textContent = detail.finished_at
+      ? new Date(detail.finished_at).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
+      : '-';
+    document.getElementById('drawer-my-submissions').innerHTML = renderSubmits(detail.my_submissions);
+    document.getElementById('drawer-opp-submissions').innerHTML = renderSubmits(detail.opp_submissions);
+  } catch (e) {
+    console.warn('상세 정보 로드 실패:', e.message);
+    document.getElementById('drawer-my-submissions').innerHTML = '<p class="text-secondary text-sm">로드 실패</p>';
+    document.getElementById('drawer-opp-submissions').innerHTML = '<p class="text-secondary text-sm">로드 실패</p>';
+>>>>>>> Stashed changes
   }
 }
 
@@ -153,31 +221,49 @@ function renderTable(data, page) {
 
   pageData.forEach(record => {
     const isWin = record.result === 'win';
+    const dateStr = record.finished_at
+      ? record.finished_at.slice(0, 10)
+      : '-';
     const tr = document.createElement('tr');
     tr.className = 'record-row border-b border-outline-variant last:border-0';
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     tr.innerHTML = `
       <td class="px-5 py-4">
         <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${isWin ? 'badge-win' : 'badge-lose'}">
           ${isWin ? '승리' : '패배'}
         </span>
       </td>
-      <td class="px-5 py-4 font-code-md text-body-sm text-primary font-bold">#${record.battleId}</td>
-      <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface font-medium">${record.problem}</td>
-      <td class="px-5 py-4 font-code-md text-body-sm text-secondary">${record.opponent}</td>
-      <td class="px-5 py-4 font-code-md text-body-sm text-on-surface">${record.time}</td>
-      <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface text-center">${record.submit}회</td>
-      <td class="px-5 py-4 font-body-sm text-body-sm text-secondary">${record.date}</td>
+      <td class="px-5 py-4 font-code-md text-body-sm text-primary font-bold">#${record.id}</td>
+      <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface font-medium">${record.problem_title || '-'}</td>
+      <td class="px-5 py-4 font-code-md text-body-sm text-secondary">${record.opponent_nickname || '-'}</td>
+      <td class="px-5 py-4 font-code-md text-body-sm text-on-surface">${secsToTime(record.duration_seconds)}</td>
+      <td class="px-5 py-4 font-body-sm text-body-sm text-on-surface text-center">${record.submit_count}회</td>
+      <td class="px-5 py-4 font-body-sm text-body-sm text-secondary">${dateStr}</td>
       <td class="px-5 py-4">
+<<<<<<< Updated upstream
         <button type="button" class="btn-detail" data-battle-id="${record.battleId}">상세보기</button>
+=======
+        <button type="button" class="btn-detail" data-record-id="${record.id}">상세보기</button>
+>>>>>>> Stashed changes
       </td>
     `;
     tbody.appendChild(tr);
   });
 
+<<<<<<< Updated upstream
   tbody.querySelectorAll('.btn-detail').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = Number(btn.dataset.battleId);
       const record = allData.find(r => r.battleId === id);
+=======
+  tbody.querySelectorAll('.btn-detail').forEach(button => {
+    button.addEventListener('click', () => {
+      const id = Number(button.dataset.recordId);
+      const record = ALL_RECORDS.find(r => r.id === id);
+>>>>>>> Stashed changes
       if (record) openDetailDrawer(record);
     });
   });
@@ -230,10 +316,17 @@ function applyFilter() {
 
   filtered = allData.filter(record => {
     if (tab !== 'all' && record.result !== tab) return false;
+<<<<<<< Updated upstream
     if (problem && record.problem !== problem) return false;
     if (search && !record.opponent.toLowerCase().includes(search)) return false;
     if (period && record.date !== '-') {
       const diff = (now - new Date(record.date)) / (1000 * 60 * 60 * 24);
+=======
+    if (problem && record.problem_title !== problem) return false;
+    if (search && !(record.opponent_nickname || '').toLowerCase().includes(search)) return false;
+    if (period && record.finished_at) {
+      const diff = (now - new Date(record.finished_at)) / (1000 * 60 * 60 * 24);
+>>>>>>> Stashed changes
       if (diff > Number(period)) return false;
     }
     return true;
@@ -258,6 +351,7 @@ function resetFilters() {
   renderPagination(filtered.length, currentPage);
 }
 
+<<<<<<< Updated upstream
 /* ── API 로드 ── */
 async function loadHistory() {
   try {
@@ -301,4 +395,40 @@ document.getElementById('drawer-close').addEventListener('click', closeDetailDra
 document.getElementById('history-detail-backdrop').addEventListener('click', closeDetailDrawer);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailDrawer(); });
 
+=======
+function bindHistoryEvents() {
+  document.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(item => item.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilter();
+    });
+  });
+
+  document.getElementById('filter-problem').addEventListener('change', applyFilter);
+  document.getElementById('filter-period').addEventListener('change', applyFilter);
+  document.getElementById('filter-search').addEventListener('input', applyFilter);
+  document.getElementById('btn-reset').addEventListener('click', resetFilters);
+  document.getElementById('drawer-close').addEventListener('click', closeDetailDrawer);
+  document.getElementById('history-detail-backdrop').addEventListener('click', closeDetailDrawer);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeDetailDrawer();
+  });
+}
+
+async function loadHistory() {
+  try {
+    ALL_RECORDS = await apiRequest('/users/me/history');
+  } catch (e) {
+    console.warn('기록 로드 실패:', e.message);
+    ALL_RECORDS = [];
+  }
+  filtered = [...ALL_RECORDS];
+  updateStats(filtered);
+  renderTable(filtered, currentPage);
+  renderPagination(filtered.length, currentPage);
+}
+
+bindHistoryEvents();
+>>>>>>> Stashed changes
 loadHistory();

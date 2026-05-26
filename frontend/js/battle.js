@@ -48,8 +48,63 @@ function toggleDrawer() {
   }
 }
 
+<<<<<<< Updated upstream
 /* ── 카운트다운 모달 ── */
 function updateCountdown(count) {
+=======
+async function submitCode() {
+  const resultEl = document.getElementById('judgeResult');
+  const submitButton = document.getElementById('submitCodeButton');
+  const battleId = getBattleId();
+
+  if (!battleId) {
+    if (resultEl) { resultEl.textContent = '배틀 ID를 찾을 수 없습니다.'; resultEl.style.color = '#dc2626'; }
+    return;
+  }
+
+  const codeEditor = document.getElementById('codeEditor');
+  const langSelect = document.getElementById('languageSelect');
+  const sourceCode = codeEditor ? codeEditor.value : '';
+  const language = langSelect ? langSelect.value : 'python';
+
+  if (!sourceCode.trim()) {
+    if (resultEl) { resultEl.textContent = '코드를 입력해주세요.'; resultEl.style.color = '#dc2626'; }
+    return;
+  }
+
+  if (submitButton) submitButton.disabled = true;
+  if (resultEl) { resultEl.textContent = '채점 중...'; resultEl.style.color = '#0058bc'; }
+
+  try {
+    const data = await apiRequest(`/battles/${battleId}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ source_code: sourceCode, language }),
+    });
+
+    const status = data.status || '-';
+    const isCorrect = data.is_correct;
+
+    if (resultEl) {
+      resultEl.textContent = `채점 결과: ${status}`;
+      resultEl.style.color = isCorrect ? '#16a34a' : '#dc2626';
+    }
+
+    if (isCorrect) {
+      sessionStorage.setItem('last_battle_id', battleId);
+      setTimeout(() => {
+        location.href = `/result?battle_id=${battleId}`;
+      }, 1000);
+    } else {
+      if (submitButton) submitButton.disabled = false;
+    }
+  } catch (e) {
+    if (resultEl) { resultEl.textContent = `오류: ${e.message}`; resultEl.style.color = '#dc2626'; }
+    if (submitButton) submitButton.disabled = false;
+  }
+}
+
+function startCountdown() {
+>>>>>>> Stashed changes
   const modal = document.getElementById('countdownModal');
   const number = document.getElementById('countdownNumber');
   if (modal) modal.classList.remove('hidden');
@@ -80,11 +135,17 @@ async function loadBattleProblem() {
   if (!battleId) return;
   try {
     const battle = await apiRequest(`/battles/${battleId}`);
+<<<<<<< Updated upstream
     if (!battle.problem_id) return;
     const problem = await apiRequest(`/problems/${battle.problem_id}`);
     renderProblem(problem);
   } catch (error) {
     console.warn('문제 로드 실패', error);
+=======
+    renderProblem(battle.problem);
+  } catch (error) {
+    console.warn('battle problem load failed', error.message);
+>>>>>>> Stashed changes
   }
 }
 

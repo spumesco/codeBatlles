@@ -5,9 +5,14 @@ const emptyState = document.getElementById('empty-state');
 const searchInput = document.getElementById('search-input');
 const sortSelect = document.getElementById('sort-select');
 
+<<<<<<< Updated upstream
 let allUsers = [];
 
 /* ── 유틸 ── */
+=======
+let ALL_RANKINGS = [];
+
+>>>>>>> Stashed changes
 function winRate(user) {
   const total = user.wins + user.loses;
   return total === 0 ? 0 : Math.round((user.wins / total) * 1000) / 10;
@@ -32,9 +37,15 @@ function sortData(data) {
 
 function render() {
   const keyword = searchInput.value.trim().toLowerCase();
+<<<<<<< Updated upstream
   const filtered = allUsers.filter(u =>
     u.nickname.toLowerCase().includes(keyword) ||
     u.userId.toLowerCase().includes(keyword)
+=======
+  const filtered = ALL_RANKINGS.filter(user =>
+    user.nickname.toLowerCase().includes(keyword) ||
+    user.userId.toLowerCase().includes(keyword)
+>>>>>>> Stashed changes
   );
   const sorted = sortData(filtered);
 
@@ -62,24 +73,40 @@ function render() {
   updateStats(sorted);
 }
 
+<<<<<<< Updated upstream
 /* ── API 로드 ── */
 async function loadLeaderboard() {
   try {
     const users = await apiRequest('/users/leaderboard?limit=100');
     allUsers = users.map(u => ({
+=======
+async function loadRankings() {
+  try {
+    const users = await apiRequest('/users/leaderboard?limit=100');
+    ALL_RANKINGS = users.map(u => ({
+>>>>>>> Stashed changes
       nickname: u.nickname,
       userId: u.user_id,
       wins: u.win_count,
       loses: u.lose_count,
     }));
   } catch (e) {
+<<<<<<< Updated upstream
     console.warn('leaderboard load failed:', e.message);
     tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary py-8">불러오기 실패</td></tr>';
     return;
+=======
+    console.warn('랭킹 로드 실패:', e.message);
+    ALL_RANKINGS = [];
+>>>>>>> Stashed changes
   }
   render();
 }
 
 searchInput.addEventListener('input', render);
 sortSelect.addEventListener('change', render);
+<<<<<<< Updated upstream
 loadLeaderboard();
+=======
+loadRankings();
+>>>>>>> Stashed changes

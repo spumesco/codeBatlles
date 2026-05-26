@@ -120,3 +120,32 @@ class BattleRepository:
             .order_by(BattleRequest.created_at.desc())
         )
         return result.scalars().all()
+
+    @staticmethod
+    async def get_battle_with_relations(db: AsyncSession, battle_id: int):
+        from sqlalchemy.orm import selectinload
+        result = await db.execute(
+            select(Battle).options(
+                selectinload(Battle.player1),
+                selectinload(Battle.player2),
+                selectinload(Battle.problem),
+                selectinload(Battle.submissions),
+            ).where(Battle.id == battle_id)
+        )
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_battle_history_rich(db: AsyncSession, user_pk: int):
+        from sqlalchemy.orm import selectinload
+        result = await db.execute(
+            select(Battle).options(
+                selectinload(Battle.player1),
+                selectinload(Battle.player2),
+                selectinload(Battle.problem),
+                selectinload(Battle.submissions),
+            ).where(
+                (Battle.player1_id == user_pk) | (Battle.player2_id == user_pk),
+                Battle.status == "finished",
+            ).order_by(Battle.id.desc())
+        )
+        return result.scalars().all()
