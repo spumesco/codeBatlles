@@ -1,8 +1,15 @@
+/* ── 유틸 ── */
 function setText(id, value) {
-  const element = document.getElementById(id);
-  if (element) element.textContent = value;
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
 }
 
+function getWsUrl(path) {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${location.host}${path}`;
+}
+
+/* ── 내 프로필 ── */
 function renderProfileLoadFailure() {
   setText('me-nickname', '불러오기 실패');
   setText('me-user-id', '-');
@@ -38,11 +45,7 @@ function renderMyProfile(user) {
 }
 
 async function loadMyProfile() {
-  if (!getToken()) {
-    window.location.href = '/login';
-    return;
-  }
-
+  if (!getToken()) { window.location.href = '/login'; return; }
   try {
     const user = await getMe();
     renderMyProfile(user);
@@ -54,11 +57,12 @@ async function loadMyProfile() {
   }
 }
 
+/* ── 배틀 신청 수락/거절 ── */
 async function acceptRequest(requestId) {
   try {
-    await apiRequest(`/match/request/${requestId}/accept`, { method: 'POST' });
-    alert('배틀 수락! 곧 배틀이 시작됩니다.');
-    loadPendingRequests();
+    const result = await apiRequest(`/match/request/${requestId}/accept`, { method: 'POST' });
+    // 수락하면 백엔드가 battle_id 반환
+    window.location.href = `/battle?battle_id=${result.battle_id}`;
   } catch (error) {
     alert(error.message);
   }
@@ -73,6 +77,7 @@ async function rejectRequest(requestId) {
   }
 }
 
+/* ── 받은 배틀 신청 목록 ── */
 async function loadPendingRequests() {
   const list = document.getElementById('request-list');
   const empty = document.getElementById('request-empty');
@@ -92,7 +97,9 @@ async function loadPendingRequests() {
       const div = document.createElement('div');
       div.className = 'request-box';
       div.innerHTML = `
-        <span class="request-text"><strong class="request-user-name">${request.requester_nickname}</strong>님이 배틀을 신청했습니다.</span>
+        <span class="request-text">
+          <strong class="request-user-name">${request.requester_nickname}</strong>님이 배틀을 신청했습니다.
+        </span>
         <div class="request-actions">
           <button class="px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all btn-accept" data-id="${request.id}">수락</button>
           <button class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:text-red-500 transition-all btn-reject" data-id="${request.id}">거절</button>
@@ -107,6 +114,7 @@ async function loadPendingRequests() {
   }
 }
 
+/* ── 온라인 유저 목록 ── */
 function statusClass(user) {
   if (user.is_battling) return 'status-battling';
   if (user.is_online) return 'status-online';
@@ -133,7 +141,8 @@ async function loadOnlineUsers() {
     tbody.innerHTML = users.map(user => {
       const canRequest = user.is_online && !user.is_battling;
       const button = canRequest
-        ? `<button class="btn-request-user px-sm py-1 border border-outline-variant text-secondary rounded text-xs hover:border-primary hover:text-primary transition-all" data-opponent="${user.nickname}">배틀 신청</button>`
+        ? `<button class="btn-request-user px-sm py-1 border border-outline-variant text-secondary rounded text-xs hover:border-primary hover:text-primary transition-all"
+             data-user-id="${user.user_id}" data-nickname="${user.nickname}">배틀 신청</button>`
         : '<button class="px-sm py-1 border border-outline-variant text-secondary rounded text-xs opacity-40" disabled>신청 불가</button>';
 
       return `<tr>
@@ -144,8 +153,10 @@ async function loadOnlineUsers() {
       </tr>`;
     }).join('');
 
-    tbody.querySelectorAll('.btn-request-user').forEach(button => {
-      button.addEventListener('click', () => goBattleRequest(button.dataset.opponent));
+    tbody.querySelectorAll('.btn-request-user').forEach(btn => {
+      btn.addEventListener('click', () =>
+        goBattleRequest(btn.dataset.userId, btn.dataset.nickname)
+      );
     });
   } catch (error) {
     console.warn('online users load failed:', error.message);
@@ -153,26 +164,56 @@ async function loadOnlineUsers() {
   }
 }
 
+/* ── 배틀 신청 이동 ── */
 const requestButton = document.getElementById('btn-request-battle');
 const opponentInput = document.getElementById('opponent-nickname');
 
-function goBattleRequest(opponent) {
-  const target = (opponent || opponentInput?.value || '').trim();
-  if (!target) return;
-  window.location.href = `/matching?mode=request&opponent=${encodeURIComponent(target)}`;
+function goBattleRequest(userId, nickname) {
+  const targetId = (userId || opponentInput?.value || '').trim();
+  const displayName = nickname || targetId;
+  if (!targetId) return;
+  window.location.href = `/matching?mode=request&opponent=${encodeURIComponent(displayName)}&target=${encodeURIComponent(targetId)}`;
 }
 
 if (requestButton && opponentInput) {
   requestButton.addEventListener('click', () => goBattleRequest(opponentInput.value));
-  opponentInput.addEventListener('keydown', event => {
-    if (event.key === 'Enter') goBattleRequest(opponentInput.value);
+  opponentInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') goBattleRequest(opponentInput.value);
   });
 }
 
+/* ── 로비 WebSocket (실시간 배틀 신청 수신 + match_found) ── */
+function connectLobbyWs() {
+  const token = getToken();
+  if (!token) return;
+
+  const ws = new WebSocket(getWsUrl(`/ws/lobby?token=${encodeURIComponent(token)}`));
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'battle_request') {
+        // 새 배틀 신청 도착 → 목록 갱신
+        loadPendingRequests();
+      } else if (data.type === 'match_found') {
+        window.location.href = `/battle?battle_id=${data.battle_id}`;
+      }
+    } catch (e) {
+      console.warn('WS 파싱 오류', e);
+    }
+  };
+
+  ws.onerror = (err) => console.warn('lobby WS error', err);
+  ws.onclose = () => console.warn('lobby WS closed');
+}
+
+/* ── 주기적 갱신 ── */
 async function refreshAll() {
   await Promise.all([loadPendingRequests(), loadOnlineUsers()]);
 }
 
+/* ── 초기화 ── */
 loadMyProfile();
 refreshAll();
+connectLobbyWs();
 setInterval(refreshAll, 30000);
