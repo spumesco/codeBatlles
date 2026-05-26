@@ -1,28 +1,20 @@
-﻿authGuard();
-
-const RANKINGS = [
-  { nickname: 'devKing', userId: 'user02', wins: 31, loses: 8 },
-  { nickname: 'algo_pro', userId: 'user07', wins: 28, loses: 9 },
-  { nickname: 'byte_king', userId: 'user11', wins: 24, loses: 10 },
-  { nickname: '철몽', userId: 'user01', wins: 21, loses: 12 },
-  { nickname: 'codeWolf', userId: 'user04', wins: 18, loses: 15 },
-  { nickname: 'night_owl', userId: 'user09', wins: 16, loses: 13 },
-  { nickname: 'pythonista', userId: 'user15', wins: 12, loses: 11 },
-  { nickname: 'fastapi_user', userId: 'user20', wins: 9, loses: 14 }
-];
+authGuard();
 
 const tbody = document.getElementById('ranking-tbody');
 const emptyState = document.getElementById('empty-state');
 const searchInput = document.getElementById('search-input');
 const sortSelect = document.getElementById('sort-select');
 
+let allUsers = [];
+
+/* ── 유틸 ── */
 function winRate(user) {
   const total = user.wins + user.loses;
   return total === 0 ? 0 : Math.round((user.wins / total) * 1000) / 10;
 }
 
 function updateStats(data) {
-  const totalBattles = data.reduce((sum, user) => sum + user.wins + user.loses, 0);
+  const totalBattles = data.reduce((sum, u) => sum + u.wins + u.loses, 0);
   const bestRate = data.length ? Math.max(...data.map(winRate)) : 0;
   document.getElementById('stat-users').textContent = data.length;
   document.getElementById('stat-battles').textContent = totalBattles;
@@ -40,9 +32,9 @@ function sortData(data) {
 
 function render() {
   const keyword = searchInput.value.trim().toLowerCase();
-  const filtered = RANKINGS.filter(user =>
-    user.nickname.toLowerCase().includes(keyword) ||
-    user.userId.toLowerCase().includes(keyword)
+  const filtered = allUsers.filter(u =>
+    u.nickname.toLowerCase().includes(keyword) ||
+    u.userId.toLowerCase().includes(keyword)
   );
   const sorted = sortData(filtered);
 
@@ -70,6 +62,24 @@ function render() {
   updateStats(sorted);
 }
 
+/* ── API 로드 ── */
+async function loadLeaderboard() {
+  try {
+    const users = await apiRequest('/users/leaderboard?limit=100');
+    allUsers = users.map(u => ({
+      nickname: u.nickname,
+      userId: u.user_id,
+      wins: u.win_count,
+      loses: u.lose_count,
+    }));
+  } catch (e) {
+    console.warn('leaderboard load failed:', e.message);
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary py-8">불러오기 실패</td></tr>';
+    return;
+  }
+  render();
+}
+
 searchInput.addEventListener('input', render);
 sortSelect.addEventListener('change', render);
-render();
+loadLeaderboard();

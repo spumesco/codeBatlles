@@ -63,6 +63,32 @@ async def get_leaderboard(
         )
     return await UserRepository.get_leaderboard(db, limit=limit)
 
+@router.get("/me/history")
+async def get_my_history(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    battles = await BattleRepository.get_battle_history_rich(db, current_user.id)
+    result = []
+    for b in battles:
+        is_winner = b.winner_id == current_user.id
+        opponent = b.player2 if b.player1_id == current_user.id else b.player1
+        my_subs = [s for s in b.submissions if s.user_id == current_user.id]
+        duration = None
+        if b.started_at and b.finished_at:
+            duration = int((b.finished_at - b.started_at).total_seconds())
+        result.append({
+            "id": b.id,
+            "result": "win" if is_winner else "lose",
+            "problem_title": b.problem.title if b.problem else "-",
+            "opponent_nickname": opponent.nickname if opponent else "-",
+            "duration_seconds": duration,
+            "submit_count": len(my_subs),
+            "finished_at": b.finished_at.isoformat() if b.finished_at else None,
+        })
+    return result
+
+
 @router.get("/{user_id}", response_model=UserSummary)
 async def get_user_profile(
     user_id: str,
