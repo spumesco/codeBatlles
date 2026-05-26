@@ -136,4 +136,4 @@ if (requestButton && opponentInput) {
 /* ── 초기화 ── */
 loadMyProfile();
 loadOnlineUsers();
-setInterval(loadOnlineUsers, 10000);  // 온라인 목록은 10초마다 갱신
+setInterval(loadOnlineUsers, 5000);   // 온라인 목록은 5초마다 갱신

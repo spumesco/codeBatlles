@@ -56,7 +56,19 @@ function connectLobbyWs() {
   const url = getWsUrl(`/ws/lobby?token=${encodeURIComponent(token)}`);
   lobbyWs = new WebSocket(url);
 
+  lobbyWs.onopen = () => {
+    /* Render.com 유휴 연결 방지: 25초마다 ping 전송 */
+    const hbTimer = setInterval(() => {
+      if (lobbyWs && lobbyWs.readyState === WebSocket.OPEN) {
+        lobbyWs.send('ping');
+      } else {
+        clearInterval(hbTimer);
+      }
+    }, 25000);
+  };
+
   lobbyWs.onmessage = (event) => {
+    if (event.data === 'pong') return;  /* heartbeat 응답 무시 */
     try {
       const data = JSON.parse(event.data);
       if (data.type === 'match_found') {

@@ -94,9 +94,22 @@ function connectMatchLobbyWs() {
   ws.onopen = () => {
     console.log('[match.js] lobby WS connected');
     loadPendingRequests();   /* 연결 직후 즉시 갱신 */
+
+    /* 내 프로필 상태 갱신 — WS 연결 후 is_online=true 반영 */
+    if (typeof loadMyProfile === 'function') loadMyProfile();
+
+    /* Render.com 유휴 연결 방지: 25초마다 ping 전송 */
+    const hbTimer = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send('ping');
+      } else {
+        clearInterval(hbTimer);
+      }
+    }, 25000);
   };
 
   ws.onmessage = (event) => {
+    if (event.data === 'pong') return;  /* heartbeat 응답 무시 */
     try {
       const data = JSON.parse(event.data);
 

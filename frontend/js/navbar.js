@@ -19,14 +19,14 @@ async function loadNavbar() {
 
   const hasToken = Boolean(getToken());
   let currentUser = null;
-  let navbarPath = '/components/guest-navbar.html';
+  /* 로그인 여부만으로 파일 선택 — 관리자 탭은 JS에서 처리 */
+  const navbarPath = hasToken
+    ? '/components/user-navbar.html'
+    : '/components/guest-navbar.html';
 
   if (hasToken) {
     try {
       currentUser = await getMe();
-      navbarPath = isAdminUser(currentUser)
-        ? '/components/admin-navbar.html'
-        : '/components/user-navbar.html';
     } catch (error) {
       console.warn(error.message);
       clearToken();
@@ -47,6 +47,14 @@ async function loadNavbar() {
   if (hasToken) {
     bindLogoutButton();
     hydrateUserNavbar(currentUser);
+
+    /* 관리자면 숨겨진 탭 + 배지 표시 */
+    if (isAdminUser(currentUser)) {
+      const adminLink = document.getElementById('navbar-admin-link');
+      if (adminLink) adminLink.classList.remove('hidden');
+      const adminBadge = document.getElementById('navbar-admin-badge');
+      if (adminBadge) adminBadge.classList.remove('hidden');
+    }
   }
 
   return container;

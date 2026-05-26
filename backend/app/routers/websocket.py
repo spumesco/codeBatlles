@@ -1,7 +1,7 @@
 ﻿from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
+from app.database import get_db, AsyncSessionLocal
 from app.auth.users import get_user_by_token
 from app.repositories.battle_repository import BattleRepository
 from app.repositories.user_repository import UserRepository
@@ -21,14 +21,29 @@ async def lobby_ws(
         await websocket.close(code=1008)
         return
 
-    await ws_manager.connect_lobby(user.id, websocket)
-    await UserRepository.update_online_status(db, user.id, True)
+    user_id = user.id  # 세션 만료 전에 저장
+
+    await ws_manager.connect_lobby(user_id, websocket)
+    await UserRepository.update_online_status(db, user_id, True)
     try:
         while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        ws_manager.disconnect_lobby(user.id)
-        await UserRepository.update_online_status(db, user.id, False)
+            msg = await websocket.receive_text()
+            # ping/pong 처리 (Render.com 유휴 연결 방지)
+            if msg == "ping":
+                try:
+                    await websocket.send_text("pong")
+                except Exception:
+                    break
+    except (WebSocketDisconnect, Exception):
+        pass
+    finally:
+        ws_manager.disconnect_lobby(user_id)
+        # 새 DB 세션으로 오프라인 처리 (기존 세션이 만료됐을 수 있으므로)
+        try:
+            async with AsyncSessionLocal() as fresh_db:
+                await UserRepository.update_online_status(fresh_db, user_id, False)
+        except Exception as e:
+            print(f"[lobby_ws] 오프라인 상태 업데이트 실패 user_id={user_id}: {e}")
 
 
 @router.websocket("/ws/battles/{battle_id}")
