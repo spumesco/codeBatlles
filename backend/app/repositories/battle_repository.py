@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -105,3 +105,18 @@ class BattleRepository:
             )
         )
         await db.commit()
+
+    @staticmethod
+    async def get_pending_requests_for_receiver(db: AsyncSession, receiver_pk: int):
+        from app.models.user import User as UserModel
+        from sqlalchemy.orm import selectinload
+        result = await db.execute(
+            select(BattleRequest)
+            .options(selectinload(BattleRequest.requester))
+            .where(
+                BattleRequest.receiver_id == receiver_pk,
+                BattleRequest.status == "pending",
+            )
+            .order_by(BattleRequest.created_at.desc())
+        )
+        return result.scalars().all()

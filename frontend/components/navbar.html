@@ -1,29 +1,17 @@
-<header class="bg-surface sticky top-0 z-50 border-b border-outline-variant">
-  <div class="flex justify-between items-center h-16 w-full max-w-[1280px] mx-auto px-5">
-    <div class="flex items-center gap-xl">
-      <a class="font-display text-h2 font-bold text-primary tracking-tight" href="/">CodeBattles</a>
-
-      <nav class="flex items-center h-full gap-1">
-        <span class="nav-divider"></span>
-        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors active:scale-95 mx-3" href="/main">배틀하기</a>
-        <span class="nav-divider"></span>
-        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors active:scale-95 mx-3" href="/history">기록</a>
-        <span class="nav-divider"></span>
-        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors active:scale-95 mx-3" href="/ranking">랭킹</a>
+<header class="site-navbar bg-surface sticky top-0 z-50 border-b border-outline-variant">
+  <div class="navbar-inner flex justify-between items-center h-16 w-full max-w-container-max mx-auto px-gutter">
+    <div class="navbar-left flex items-center gap-xl">
+      <a class="nav-logo font-display text-h2 font-bold text-primary tracking-tight" href="/">CodeBattles</a>
+      <nav class="nav-links hidden md:flex items-center gap-lg h-full">
+        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/main">배틀하기</a>
+        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/history">기록</a>
+        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/ranking">랭킹</a>
+        <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors" href="/settings">설정</a>
       </nav>
     </div>
-
-    <div class="flex items-center gap-md">
-      <a class="font-body-md text-body-md text-secondary font-medium hover:text-primary transition-colors active:scale-95" href="/settings">설정</a>
-      <span class="nav-divider"></span>
-      <div class="flex items-center gap-sm">
-        <button onclick="location.href='/login'" class="font-body-md text-body-md px-md py-sm border border-primary text-primary rounded-lg font-bold hover:bg-primary-fixed transition-all active:scale-95">
-          로그인
-        </button>
-        <button onclick="location.href='/register'" class="font-body-md text-body-md px-md py-sm bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container active:scale-95 transition-all">
-          회원가입
-        </button>
-      </div>
+    <div class="nav-right flex items-center gap-md">
+      <button type="button" onclick="location.href='/login'" class="btn-outline font-body-md text-body-md px-md py-sm border border-primary text-primary rounded-lg font-bold hover:bg-primary-fixed transition-all active:scale-95">로그인</button>
+      <button type="button" onclick="location.href='/register'" class="btn-logout font-body-md text-body-md px-md py-sm bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container active:scale-95 transition-all">회원가입</button>
     </div>
   </div>
 </header>

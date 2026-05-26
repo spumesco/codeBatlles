@@ -20,7 +20,6 @@ class User(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
     match_entries = relationship("MatchQueue", back_populates="user", cascade="all, delete-orphan")
     submissions = relationship("Submission", back_populates="user")
 

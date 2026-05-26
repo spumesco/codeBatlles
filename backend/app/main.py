@@ -1,3 +1,4 @@
+﻿from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -5,12 +6,34 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.routers import auth, users, match, battles, websocket
+from app.database import Base, engine
+import app.models.battle
+import app.models.battle_request
+import app.models.match_queue
+import app.models.problem
+import app.models.submission
+import app.models.test_case
+import app.models.user
+from app.routers import admin, auth, battles, match, problems, users, websocket
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+FRONTEND_DIR = PROJECT_ROOT / "frontend"
+PAGES_DIR = FRONTEND_DIR / "pages"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
 
 app = FastAPI(
     title="CodeBattles API",
     description="Realtime code battle platform backend",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -21,21 +44,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(match.router)
-app.include_router(battles.router)
-app.include_router(websocket.router)
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-FRONTEND_DIR = PROJECT_ROOT / "frontend"
-PAGES_DIR = FRONTEND_DIR / "pages"
-
 app.mount("/css", StaticFiles(directory=FRONTEND_DIR / "css"), name="css")
 app.mount("/js", StaticFiles(directory=FRONTEND_DIR / "js"), name="js")
 app.mount("/assets", StaticFiles(directory=FRONTEND_DIR / "assets"), name="assets")
 app.mount("/components", StaticFiles(directory=FRONTEND_DIR / "components"), name="components")
 app.mount("/vendor", StaticFiles(directory=FRONTEND_DIR / "vendor"), name="vendor")
+
+app.include_router(auth.router)
+app.include_router(users.router)
+app.include_router(match.router)
+app.include_router(battles.router)
+app.include_router(problems.router)
+app.include_router(admin.router)
+app.include_router(websocket.router)
+
 
 @app.get("/")
 def index_page():
@@ -77,6 +99,11 @@ def history_page():
     return FileResponse(PAGES_DIR / "history.html")
 
 
+@app.get("/history-detail")
+def history_detail_page():
+    return FileResponse(PAGES_DIR / "history_detail.html")
+
+
 @app.get("/ranking")
 def ranking_page():
     return FileResponse(PAGES_DIR / "ranking.html")
@@ -95,3 +122,5 @@ def admin_problems_page():
 @app.get("/api/health")
 def health_check():
     return {"message": "CodeBattles backend is running"}
+
+
