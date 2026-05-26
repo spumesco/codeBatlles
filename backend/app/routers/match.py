@@ -40,6 +40,23 @@ async def leave_queue(
     return {"message": "매칭 취소됨"}
 
 
+@router.get("/requests/pending")
+async def get_pending_requests(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    requests = await BattleRepository.get_pending_requests_for_receiver(db, current_user.id)
+    return [
+        {
+            "id": req.id,
+            "requester_nickname": req.requester.nickname,
+            "requester_user_id": req.requester.user_id,
+            "created_at": req.created_at.isoformat() if req.created_at else None,
+        }
+        for req in requests
+    ]
+
+
 @router.post("/request")
 async def request_battle(
     body: BattleRequestCreate,

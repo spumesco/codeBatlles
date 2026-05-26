@@ -22,6 +22,7 @@ async def lobby_ws(
         return
 
     await ws_manager.connect_lobby(user.id, websocket)
+    await UserRepository.update_online_status(db, user.id, True)
     try:
         while True:
             await websocket.receive_text()

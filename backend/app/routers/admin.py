@@ -16,6 +16,7 @@ from app.schemas.user import UserRead
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+
 class DashboardStats(BaseModel):
     total_users: int
     online_users: int
@@ -23,14 +24,18 @@ class DashboardStats(BaseModel):
     total_battles: int
     total_submissions: int
 
+
 class UserAdminRead(UserRead):
     pass
+
 
 class RoleUpdate(BaseModel):
     role: str
 
+
 class ActiveUpdate(BaseModel):
     is_active: bool
+
 
 class ProblemAdminRead(BaseModel):
     model_config = {"from_attributes": True}
@@ -47,6 +52,7 @@ class ProblemAdminRead(BaseModel):
     is_deleted: bool
     created_at: datetime
     updated_at: datetime
+
 
 @router.get("/stats", response_model=DashboardStats)
 async def get_dashboard_stats(
@@ -74,6 +80,7 @@ async def get_dashboard_stats(
         total_submissions=total_submissions,
     )
 
+
 @router.get("/users", response_model=list[UserAdminRead])
 async def list_all_users(
     db: AsyncSession = Depends(get_db),
@@ -81,6 +88,7 @@ async def list_all_users(
 ):
     result = await db.execute(select(User).order_by(User.id.asc()))
     return result.scalars().all()
+
 
 @router.get("/users/{user_id}", response_model=UserAdminRead)
 async def get_user(
@@ -92,6 +100,7 @@ async def get_user(
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없습니다.")
     return user
+
 
 @router.patch("/users/{user_id}/role", response_model=UserAdminRead)
 async def update_user_role(
@@ -112,6 +121,7 @@ async def update_user_role(
     updated = await UserRepository.update_role(db, user.id, body.role)
     return updated
 
+
 @router.patch("/users/{user_id}/active", response_model=UserAdminRead)
 async def update_user_active(
     user_id: str,
@@ -125,6 +135,7 @@ async def update_user_active(
     updated = await UserRepository.update_active_status(db, user.id, body.is_active)
     return updated
 
+
 @router.get("/problems", response_model=list[ProblemAdminRead])
 async def list_all_problems(
     db: AsyncSession = Depends(get_db),
@@ -132,6 +143,7 @@ async def list_all_problems(
 ):
     result = await db.execute(select(Problem).order_by(Problem.id.asc()))
     return result.scalars().all()
+
 
 @router.patch("/problems/{problem_id}/restore", response_model=ProblemAdminRead)
 async def restore_problem(
@@ -153,6 +165,7 @@ async def restore_problem(
     await db.refresh(problem)
     return problem
 
+
 @router.delete("/problems/{problem_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def admin_delete_problem(
     problem_id: int,
@@ -163,6 +176,7 @@ async def admin_delete_problem(
     if not problem:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="문제를 찾을 수 없습니다.")
     await ProblemRepository.delete_problem(db, problem_id)
+
 
 @router.post("/problems/import-zip", status_code=status.HTTP_201_CREATED)
 async def import_problem_from_zip(

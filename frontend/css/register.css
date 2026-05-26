@@ -1,0 +1,29 @@
+body {
+  background-color: #fcf9f8;
+  margin: 0;
+  padding: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #1c1b1b;
+}
+
+.auth-page {
+  min-height: calc(100vh - 64px);
+}
+
+.auth-card {
+  background: #ffffff;
+}
+
+.field-help strong {
+  color: #ba1a1a;
+  font-weight: 600;
+}
+
+.register-submit {
+  border: 0;
+  cursor: pointer;
+}
+
+input.w-full {
+  box-sizing: border-box;
+}

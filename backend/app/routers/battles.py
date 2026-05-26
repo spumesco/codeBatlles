@@ -71,6 +71,53 @@ async def submit(
     }
 
 
+@router.get("/{battle_id}/result")
+async def get_battle_result(
+    battle_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    battle = await BattleRepository.get_battle_with_relations(db, battle_id)
+    if not battle:
+        raise HTTPException(status_code=404, detail="배틀을 찾을 수 없습니다.")
+    if current_user.id not in (battle.player1_id, battle.player2_id):
+        raise HTTPException(status_code=403, detail="접근 권한이 없습니다.")
+
+    opponent = battle.player2 if battle.player1_id == current_user.id else battle.player1
+    is_winner = battle.winner_id == current_user.id
+
+    my_subs = sorted(
+        [s for s in battle.submissions if s.user_id == current_user.id],
+        key=lambda s: s.created_at,
+    )
+    opp_subs = sorted(
+        [s for s in battle.submissions if opponent and s.user_id == opponent.id],
+        key=lambda s: s.created_at,
+    )
+
+    def sub_info(s):
+        return {
+            "status": s.judge_status,
+            "language": s.language,
+            "execution_time": s.execution_time,
+            "memory_usage": s.memory_usage,
+            "submitted_at": s.created_at.strftime("%H:%M") if s.created_at else "-",
+        }
+
+    return {
+        "battle_id": battle.id,
+        "result": "win" if is_winner else "lose",
+        "problem_title": battle.problem.title if battle.problem else "-",
+        "opponent_nickname": opponent.nickname if opponent else "-",
+        "started_at": battle.started_at.isoformat() if battle.started_at else None,
+        "finished_at": battle.finished_at.isoformat() if battle.finished_at else None,
+        "my_submissions": [sub_info(s) for s in my_subs],
+        "opp_submissions": [sub_info(s) for s in opp_subs],
+        "my_win_count": current_user.win_count,
+        "my_lose_count": current_user.lose_count,
+    }
+
+
 @router.get("/{battle_id}/submissions", response_model=list[SubmissionRead])
 async def get_submissions(
     battle_id: int,

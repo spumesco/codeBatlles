@@ -1,0 +1,99 @@
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+body {
+  background-color: #fcf9f8;
+  margin: 0;
+  padding: 0;
+}
+
+.ranking-row {
+  transition: background 0.12s;
+}
+
+.ranking-row:hover {
+  background: #f0edec;
+}
+
+.rank-badge {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  border: 1px solid #c1c6d7;
+  background: #ffffff;
+}
+
+.rank-1 {
+  background: #fff7d6;
+  border-color: #f1c84b;
+  color: #8a5a00;
+}
+
+.rank-2 {
+  background: #eef2f7;
+  border-color: #b8c1ce;
+  color: #475569;
+}
+
+.rank-3 {
+  background: #ffe8d5;
+  border-color: #f0a46a;
+  color: #8b3f12;
+}
+
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #c1c6d7;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.table-wrap {
+  background: #ffffff;
+  border: 1px solid #c1c6d7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ranking-table-head {
+  background: #f0edec;
+}
+
+.filter-input {
+  border: 1.5px solid #c1c6d7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #1c1b1b;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.filter-input:focus {
+  border-color: #0058bc;
+}
+
+.search-icon {
+  font-size: 18px;
+}
+
+.empty-icon {
+  font-size: 40px;
+  color: #c1c6d7;
+}
+
+.win-cell {
+  color: #065f46;
+}
+
+.lose-cell {
+  color: #991b1b;
+}

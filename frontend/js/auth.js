@@ -1,49 +1,35 @@
-async function handleRegister() {
-    const userId = document.getElementById('username').value.trim();
-    const nickname = document.getElementById('nickname').value.trim();
-    const password = document.getElementById('password').value;
-    const passwordConfirm = document.getElementById('password-confirm').value;
-
-    if (!/^[a-zA-Z0-9]{4,20}$/.test(userId)) {
-        alert('아이디는 영문/숫자 조합 4~20자여야 합니다.');
-        return;
-    }
-    if (!nickname) {
-        alert('닉네임을 입력해주세요.');
-        return;
-    }
-    if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(password)) {
-        alert('비밀번호는 영문+숫자+특수문자 조합 8자 이상이어야 합니다.');
-        return;
-    }
-    if (password !== passwordConfirm) {
-        alert('비밀번호가 일치하지 않습니다.');
-        return;
-    }
-
-    try {
-        await register(userId, password, nickname);
-        alert('회원가입이 완료되었습니다. 로그인해주세요.');
-        window.location.href = '/login';
-    } catch (e) {
-        alert(e.message);
-    }
-}
-
 async function handleLogin() {
-    const userId = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+  const userId = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const saveIdChecked = document.getElementById('chk-save-id')?.checked ?? false;
+  const autoLoginChecked = document.getElementById('chk-auto-login')?.checked ?? false;
 
-    if (!userId || !password) {
-        alert('아이디와 비밀번호를 입력해주세요.');
-        return;
+  if (!userId || !password) {
+    alert('아이디와 비밀번호를 입력해주세요.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-login');
+  if (btn) { btn.disabled = true; btn.textContent = '로그인 중...'; }
+
+  try {
+    const data = await apiLogin(userId, password);
+
+    // 아이디 저장
+    if (saveIdChecked) {
+      localStorage.setItem('saved_user_id', userId);
+      localStorage.setItem('save_id_on', '1');
+    } else {
+      localStorage.removeItem('saved_user_id');
+      localStorage.removeItem('save_id_on');
     }
 
-    try {
-        const data = await apiLogin(userId, password);
-        localStorage.setItem('access_token', data.access_token);
-        window.location.href = '/main';
-    } catch (e) {
-        alert(e.message);
-    }
+    // 자동 로그인이면 localStorage, 아니면 sessionStorage
+    setToken(data.access_token, autoLoginChecked);
+
+    window.location.href = '/main';
+  } catch (e) {
+    alert(e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '로그인'; }
+  }
 }

@@ -1,17 +1,16 @@
-/* ===== 공통 Navbar CSS ===== */
-
-/* Tailwind 설정과 함께 쓰는 추가 스타일 */
-
 body {
   background-color: #fcf9f8;
   margin: 0;
   padding: 0;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   color: #1c1b1b;
 }
 
-/* Navbar */
-header {
+header,
+.site-navbar {
+  display: block;
+  width: 100%;
+  min-height: 64px;
   background-color: #fcf9f8;
   border-bottom: 1px solid #c1c6d7;
   position: sticky;
@@ -19,67 +18,93 @@ header {
   z-index: 50;
 }
 
-.navbar-inner {
+.navbar-inner,
+header > div {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 64px;
+  min-height: 64px;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 20px;
+  gap: 24px;
 }
 
-.nav-logo {
-  font-family: 'Space Grotesk', sans-serif;
+.navbar-left,
+.nav-right,
+header .flex.items-center,
+header .flex.justify-between {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-left,
+header .flex.items-center.gap-xl {
+  gap: 48px;
+}
+
+.nav-right {
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.nav-logo,
+header a[href="/"] {
+  font-family: "Space Grotesk", sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: #0058bc;
   text-decoration: none;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 
-.nav-links {
+.nav-links,
+header nav {
   display: flex;
   align-items: center;
   gap: 24px;
 }
 
-.nav-links a {
-  font-family: 'Space Grotesk', sans-serif;
+@media (max-width: 767px) {
+  .nav-links,
+  header nav {
+    display: none;
+  }
+}
+
+.nav-links a,
+header nav a {
+  font-family: "Space Grotesk", sans-serif;
   font-size: 16px;
   color: #5e5e5e;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+header nav a:hover,
+.nav-links a.active,
+header nav a.active {
   color: #0058bc;
 }
 
-.nav-links a.active {
-  color: #0058bc;
-  font-weight: 700;
-  border-bottom: 2px solid #0058bc;
-  padding-bottom: 4px;
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.nav-username {
-  font-family: 'Space Grotesk', sans-serif;
+.nav-username,
+#navbar-nickname {
+  font-family: "Space Grotesk", sans-serif;
   font-size: 16px;
   color: #5e5e5e;
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.btn-logout {
-  font-family: 'Space Grotesk', sans-serif;
+.btn-logout,
+.btn-outline,
+#btn-logout {
+  font-family: "Space Grotesk", sans-serif;
   font-size: 16px;
   padding: 8px 16px;
   background-color: #0058bc;
@@ -89,23 +114,95 @@ header {
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
+  white-space: nowrap;
 }
 
-.btn-logout:hover {
+.btn-outline {
+  background-color: transparent;
+  color: #0058bc;
+  border: 1px solid #0058bc;
+}
+
+.btn-logout:hover,
+.btn-outline:hover,
+#btn-logout:hover {
   background-color: #0070eb;
 }
 
-.btn-logout:active {
+.btn-logout:active,
+#btn-logout:active {
   transform: scale(0.95);
 }
 
 .admin-badge {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.65rem;
   background: #e3b341;
-  color: #000;
+  color: #000000;
   padding: 2px 7px;
   border-radius: 4px;
   font-weight: 700;
   margin-left: 6px;
   vertical-align: middle;
+}
+
+html.dark body,
+body.dark-preview {
+  background-color: #121417;
+  color: #f4f7fb;
+}
+
+html.dark header,
+html.dark .site-navbar,
+body.dark-preview header,
+body.dark-preview .site-navbar {
+  background-color: #121417;
+  border-bottom-color: #2f3743;
+}
+
+html.dark .nav-logo,
+html.dark header a[href="/"],
+body.dark-preview .nav-logo,
+body.dark-preview header a[href="/"] {
+  color: #8ab4ff;
+}
+
+html.dark .nav-links a,
+html.dark header nav a,
+html.dark .nav-username,
+html.dark #navbar-nickname,
+body.dark-preview .nav-links a,
+body.dark-preview header nav a,
+body.dark-preview .nav-username,
+body.dark-preview #navbar-nickname {
+  color: #c9d1dc;
+}
+
+html.dark .nav-links a:hover,
+html.dark header nav a:hover,
+html.dark .nav-links a.active,
+html.dark header nav a.active,
+body.dark-preview .nav-links a:hover,
+body.dark-preview header nav a:hover,
+body.dark-preview .nav-links a.active,
+body.dark-preview header nav a.active {
+  color: #8ab4ff;
+}
+
+html.dark .btn-logout,
+html.dark .btn-outline,
+html.dark #btn-logout,
+body.dark-preview .btn-logout,
+body.dark-preview .btn-outline,
+body.dark-preview #btn-logout {
+  background-color: #8ab4ff;
+  color: #0b1220;
+}
+
+html.dark .btn-logout:hover,
+html.dark #btn-logout:hover,
+body.dark-preview .btn-logout:hover,
+body.dark-preview #btn-logout:hover {
+  background-color: #adc6ff;
 }

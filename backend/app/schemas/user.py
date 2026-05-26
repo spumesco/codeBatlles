@@ -29,3 +29,6 @@ class UserSummary(BaseModel):
     lose_count: int
     is_online: bool
     is_battling: bool
+
+
+UserPublic = UserSummary

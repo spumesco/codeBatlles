@@ -1,4 +1,4 @@
-from sqlalchemy import select, update
+﻿from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
@@ -31,7 +31,14 @@ class UserRepository:
     @staticmethod
     async def get_online_users(db: AsyncSession) -> list[User]:
         result = await db.execute(select(User).where(User.is_online == True))
-        return result.scalars().all()
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def get_leaderboard(db: AsyncSession, limit: int = 20) -> list[User]:
+        result = await db.execute(
+            select(User).order_by(User.win_count.desc()).limit(limit)
+        )
+        return list(result.scalars().all())
 
     @staticmethod
     async def update_online_status(db: AsyncSession, user_pk: int, is_online: bool) -> None:
@@ -56,3 +63,27 @@ class UserRepository:
             update(User).where(User.id == loser_pk).values(lose_count=User.lose_count + 1)
         )
         await db.commit()
+
+    @staticmethod
+    async def update_nickname(db: AsyncSession, user_pk: int, nickname: str) -> User | None:
+        await db.execute(
+            update(User).where(User.id == user_pk).values(nickname=nickname)
+        )
+        await db.commit()
+        return await UserRepository.get_user_by_pk(db, user_pk)
+
+    @staticmethod
+    async def update_role(db: AsyncSession, user_pk: int, role: str) -> User | None:
+        await db.execute(
+            update(User).where(User.id == user_pk).values(role=role)
+        )
+        await db.commit()
+        return await UserRepository.get_user_by_pk(db, user_pk)
+
+    @staticmethod
+    async def update_active_status(db: AsyncSession, user_pk: int, is_active: bool) -> User | None:
+        await db.execute(
+            update(User).where(User.id == user_pk).values(is_active=is_active)
+        )
+        await db.commit()
+        return await UserRepository.get_user_by_pk(db, user_pk)
