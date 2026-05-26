@@ -14,24 +14,24 @@
 
 <div class="result-wrap">
   <div class="result-banner">
-    <div class="result-icon" aria-hidden="true">🎉</div>
-    <div class="result-title result-win">승리</div>
-    <div class="result-description">상대보다 먼저 정답을 맞혔습니다.</div>
+    <div id="result-icon" class="result-icon" aria-hidden="true">⏳</div>
+    <div id="result-title" class="result-title">로딩 중...</div>
+    <div id="result-description" class="result-description"></div>
   </div>
 
   <div class="card">
     <div class="card-title">배틀 정보</div>
     <div class="info-row">
       <span class="info-label">문제</span>
-      <span class="info-value code-value">A+B</span>
+      <span id="result-problem" class="info-value code-value">-</span>
     </div>
     <div class="info-row">
       <span class="info-label">상대</span>
-      <span class="info-value strong-value">김건한</span>
+      <span id="result-opponent" class="info-value strong-value">-</span>
     </div>
     <div class="info-row">
       <span class="info-label">종료 시간</span>
-      <span class="info-value code-value text-primary">2026-05-10 14:30</span>
+      <span id="result-end-time" class="info-value code-value text-primary">-</span>
     </div>
   </div>
 
@@ -40,17 +40,17 @@
     <div class="submit-grid">
       <div class="submit-box">
         <h6>내 제출 결과</h6>
-        <div class="submit-row"><span class="submit-label">결과</span><span class="accepted-text code-value">Accepted</span></div>
-        <div class="submit-row"><span class="submit-label">언어</span><span>Python</span></div>
-        <div class="submit-row"><span class="submit-label">실행 시간</span><span class="code-value text-primary">0.002초</span></div>
-        <div class="submit-row"><span class="submit-label">메모리</span><span class="code-value text-primary">3400 KB</span></div>
+        <div class="submit-row"><span class="submit-label">결과</span><span id="my-sub-result" class="code-value">-</span></div>
+        <div class="submit-row"><span class="submit-label">언어</span><span id="my-sub-lang">-</span></div>
+        <div class="submit-row"><span class="submit-label">실행 시간</span><span id="my-sub-time" class="code-value text-primary">-</span></div>
+        <div class="submit-row"><span class="submit-label">메모리</span><span id="my-sub-memory" class="code-value text-primary">-</span></div>
       </div>
       <div class="submit-box">
         <h6>상대 제출 결과</h6>
-        <div class="submit-row"><span class="submit-label">결과</span><span class="wrong-text code-value">Wrong Answer</span></div>
-        <div class="submit-row"><span class="submit-label">언어</span><span>Python</span></div>
-        <div class="submit-row"><span class="submit-label">실행 시간</span><span class="code-value muted-code">0.005초</span></div>
-        <div class="submit-row"><span class="submit-label">메모리</span><span class="code-value muted-code">3500 KB</span></div>
+        <div class="submit-row"><span class="submit-label">결과</span><span id="opp-sub-result" class="code-value">-</span></div>
+        <div class="submit-row"><span class="submit-label">언어</span><span id="opp-sub-lang">-</span></div>
+        <div class="submit-row"><span class="submit-label">실행 시간</span><span id="opp-sub-time" class="code-value muted-code">-</span></div>
+        <div class="submit-row"><span class="submit-label">메모리</span><span id="opp-sub-memory" class="code-value muted-code">-</span></div>
       </div>
     </div>
   </div>
@@ -58,9 +58,9 @@
   <div class="card">
     <div class="card-title">전적 변화</div>
     <div class="record-change">
-      <span>이전: <span class="code-value strong-value"><span class="accepted-text">3승</span> <span class="wrong-text">2패</span></span></span>
+      <span>이전: <span class="code-value strong-value" id="result-prev-record">-</span></span>
       <span class="change-arrow">→</span>
-      <span>현재: <span class="code-value strong-value"><span class="accepted-text">4승</span> <span class="wrong-text">2패</span></span></span>
+      <span>현재: <span class="code-value strong-value" id="result-curr-record">-</span></span>
     </div>
   </div>
 
