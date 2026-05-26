@@ -52,6 +52,9 @@ function connectLobbyWs() {
       const data = JSON.parse(event.data);
       if (data.type === 'match_found') {
         window.location.href = `/battle?battle_id=${data.battle_id}`;
+      } else if (data.type === 'battle_rejected') {
+        alert('상대방이 배틀 신청을 거절했습니다.');
+        window.location.href = '/main';
       }
     } catch (e) {
       console.warn('WS 파싱 오류', e);
