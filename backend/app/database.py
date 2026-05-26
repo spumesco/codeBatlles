@@ -16,7 +16,7 @@ if settings.DB_SSL_CA:
 engine = create_async_engine(
     settings.DATABASE_URL,
     connect_args=connect_args,
-    echo=True,
+    echo=False,
 )
 
 AsyncSessionLocal = async_sessionmaker(

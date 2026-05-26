@@ -25,7 +25,7 @@ class ProblemRepository:
         result = await db.execute(
             select(Problem)
             .where(Problem.is_deleted == False)
-            .order_by(func.random())
+            .order_by(func.rand())
             .limit(1)
         )
         return result.scalar_one_or_none()
