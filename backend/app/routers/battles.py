@@ -9,9 +9,56 @@ from app.repositories.submission_repository import SubmissionRepository
 from app.schemas.battle import BattleRead
 from app.schemas.submission import SubmissionCreate, SubmissionRead
 from app.services.battle_service import BattleService
-from app.services.judge_service import JudgeService
+from app.services.judge_service import JudgeService, JudgeUnavailable
 
 router = APIRouter(prefix="/battles", tags=["battles"])
+
+
+@router.get("/{battle_id}/result")
+async def get_battle_result(
+    battle_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    battle = await BattleRepository.get_battle_with_relations(db, battle_id)
+    if not battle:
+        raise HTTPException(status_code=404, detail="배틀을 찾을 수 없습니다.")
+    if current_user.id not in (battle.player1_id, battle.player2_id):
+        raise HTTPException(status_code=403, detail="접근 권한이 없습니다.")
+
+    opponent = battle.player2 if battle.player1_id == current_user.id else battle.player1
+    is_winner = battle.winner_id == current_user.id
+
+    my_subs = sorted(
+        [s for s in battle.submissions if s.user_id == current_user.id],
+        key=lambda s: s.created_at,
+    )
+    opp_subs = sorted(
+        [s for s in battle.submissions if opponent and s.user_id == opponent.id],
+        key=lambda s: s.created_at,
+    )
+
+    def sub_info(s):
+        return {
+            "status": s.judge_status,
+            "language": s.language,
+            "execution_time": s.execution_time,
+            "memory_usage": s.memory_usage,
+            "submitted_at": s.created_at.strftime("%H:%M") if s.created_at else "-",
+        }
+
+    return {
+        "battle_id": battle.id,
+        "result": "win" if is_winner else "lose",
+        "problem_title": battle.problem.title if battle.problem else "-",
+        "opponent_nickname": opponent.nickname if opponent else "-",
+        "started_at": battle.started_at.isoformat() if battle.started_at else None,
+        "finished_at": battle.finished_at.isoformat() if battle.finished_at else None,
+        "my_submissions": [sub_info(s) for s in my_subs],
+        "opp_submissions": [sub_info(s) for s in opp_subs],
+        "my_win_count": current_user.win_count,
+        "my_lose_count": current_user.lose_count,
+    }
 
 
 @router.get("/{battle_id}", response_model=BattleRead)
@@ -48,12 +95,27 @@ async def submit(
         raise HTTPException(status_code=400, detail="이미 정답을 제출했습니다.")
 
     problem = await ProblemRepository.get_problem(db, battle.problem_id)
-    test_cases = await ProblemRepository.get_test_cases(db, battle.problem_id)
+    if not problem:
+        raise HTTPException(status_code=400, detail="배틀에 연결된 문제를 찾을 수 없습니다.")
 
-    result = await JudgeService.judge_all(
-        body.source_code, body.language, test_cases,
-        problem.time_limit, problem.memory_limit,
-    )
+    test_cases = await ProblemRepository.get_test_cases(db, battle.problem_id)
+    if not test_cases:
+        raise HTTPException(
+            status_code=400,
+            detail="해당 문제에 등록된 테스트 케이스가 없어 채점할 수 없습니다.",
+        )
+
+    try:
+        result = await JudgeService.judge_all(
+            body.source_code, body.language, test_cases,
+            problem.time_limit, problem.memory_limit,
+        )
+    except JudgeUnavailable as e:
+        # 채점 서버 다운/타임아웃은 사용자에게 명확히 안내.
+        raise HTTPException(status_code=503, detail=f"채점 서버를 사용할 수 없습니다. {e}") from e
+    except Exception as e:
+        # 그 외 예기치 못한 채점 오류 — 500 대신 502 로 변환해 사용자에게 메시지 노출.
+        raise HTTPException(status_code=502, detail=f"채점 중 오류가 발생했습니다: {e!s}") from e
 
     sub = await SubmissionRepository.create_submission(
         db, battle_id, current_user.id, battle.problem_id,
@@ -83,3 +145,5 @@ async def get_submissions(
     if current_user.id not in (battle.player1_id, battle.player2_id):
         raise HTTPException(status_code=403, detail="접근 권한이 없습니다.")
     return await SubmissionRepository.get_submissions_by_battle(db, battle_id)
+
+# NOTE: GET /{battle_id}/result 는 파일 상단(line 17)에 정의되어 있으며 중복 정의 제거됨

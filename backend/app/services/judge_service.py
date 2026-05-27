@@ -46,6 +46,10 @@ USE_LOCAL_FALLBACK = os.environ.get("USE_LOCAL_FALLBACK", "1") != "0"
 JUDGE0_TIMEOUT_SEC = float(os.environ.get("JUDGE0_TIMEOUT_SEC", "10"))
 
 
+class JudgeUnavailable(Exception):
+    """채점 서버(Judge0) 에 접근할 수 없을 때 발생."""
+
+
 class JudgeService:
     # ── Judge0 단일 호출 (실패 시 None) ─────────────────────────
     @staticmethod

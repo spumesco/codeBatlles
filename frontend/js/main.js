@@ -1,31 +1,28 @@
+/* ────────────────────────────────────────────────────────────
+   main.js  — 내 프로필 + 온라인 유저 목록 + 배틀 신청 이동
+   배틀 요청 수신/WS 는 match.js 에서 처리
+──────────────────────────────────────────────────────────── */
+
 /* ── 유틸 ── */
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
 }
 
-function getWsUrl(path) {
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${proto}//${location.host}${path}`;
-}
+/* ── 현재 로그인 유저 캐시 ── */
+let myUserId = null;
+let myUserPk = null;
+let onlineUsersCache = [];  // 마지막으로 조회한 온라인 유저 목록
 
 /* ── 내 프로필 ── */
-function renderProfileLoadFailure() {
-  setText('me-nickname', '불러오기 실패');
-  setText('me-user-id', '-');
-  setText('me-ranking', '-');
-}
-
 function renderMyProfile(user) {
   setText('me-nickname', user.nickname || '-');
   setText('me-user-id', user.user_id || '-');
   setText('me-ranking', user.rank ? `#${user.rank}` : '-');
 
-  const winCount = user.win_count ?? 0;
-  const loseCount = user.lose_count ?? 0;
   const record = document.getElementById('me-record');
   if (record) {
-    record.innerHTML = `<span class="text-win">${winCount}승</span> <span class="text-lose">${loseCount}패</span>`;
+    record.innerHTML = `<span class="text-win">${user.win_count ?? 0}승</span> <span class="text-lose">${user.lose_count ?? 0}패</span>`;
   }
 
   const status = document.getElementById('me-status');
@@ -48,82 +45,127 @@ async function loadMyProfile() {
   if (!getToken()) { window.location.href = '/login'; return; }
   try {
     const user = await getMe();
+    myUserId = user.user_id;
+    myUserPk = user.id;
+
+    /* 배틀 상태 자가 점검 — stuck (is_battling=true 인데 실제 배틀 없음) 자동 해제,
+       진짜 진행 중인 배틀이면 복귀 패널 노출.
+       API 가 실패하더라도 UI 가 갇히지 않도록 catch 처리. */
+    let battleState = null;
+    try {
+      battleState = await apiRequest('/users/me/battle-state');
+      /* 서버가 플래그를 갱신했을 수 있으니 화면용 사본에 동기화. */
+      user.is_battling = !!battleState.is_battling;
+    } catch (e) {
+      console.warn('battle-state 조회 실패 — 강제 해제 버튼으로 복구 가능', e.message);
+    }
+
     renderMyProfile(user);
+    /* user.is_battling 이 true 거나 active battle 이 살아있을 때 항상 복구 패널 노출.
+       API 가 죽었어도 사용자는 강제 해제로 빠져나올 수 있다. */
+    renderBattleRecovery({
+      is_battling: !!user.is_battling,
+      active_battle_id: battleState?.active_battle_id ?? null,
+    });
   } catch (error) {
     console.warn(error.message);
-    renderProfileLoadFailure();
     clearToken();
     window.location.href = '/login';
   }
 }
 
-/* ── 배틀 신청 수락/거절 ── */
-async function acceptRequest(requestId) {
-  try {
-    const result = await apiRequest(`/match/request/${requestId}/accept`, { method: 'POST' });
-    // 수락하면 백엔드가 battle_id 반환
-    window.location.href = `/battle?battle_id=${result.battle_id}`;
-  } catch (error) {
-    alert(error.message);
-  }
-}
+/* ── 진행 중인 배틀 복귀/포기 패널 ──
+   - is_battling=true 면 항상 노출 (백엔드 API 죽어도 출구 보장)
+   - active_battle_id 있으면 "배틀로 돌아가기" 버튼 활성화
+   - 없거나 stuck 이면 "강제 해제" 만 노출 */
+function renderBattleRecovery(state) {
+  const existing = document.getElementById('battle-recovery');
+  if (existing) existing.remove();
 
-async function rejectRequest(requestId) {
-  try {
-    await apiRequest(`/match/request/${requestId}/reject`, { method: 'POST' });
-    loadPendingRequests();
-  } catch (error) {
-    alert(error.message);
-  }
-}
+  if (!state || !state.is_battling) return;
 
-/* ── 받은 배틀 신청 목록 ── */
-async function loadPendingRequests() {
-  const list = document.getElementById('request-list');
-  const empty = document.getElementById('request-empty');
-  if (!list || !empty) return;
+  const meStatus = document.getElementById('me-status');
+  if (!meStatus) return;
+  const card = meStatus.closest('.card') || meStatus.parentElement;
 
-  try {
-    const requests = await apiRequest('/match/requests/pending');
-    list.innerHTML = '';
+  const activeId = state.active_battle_id;
+  const headline = activeId
+    ? `진행 중인 배틀이 있습니다 (#${activeId})`
+    : '배틀 상태가 남아있습니다 — 강제 해제로 복구할 수 있어요.';
 
-    if (requests.length === 0) {
-      empty.style.display = '';
-      return;
-    }
+  const box = document.createElement('div');
+  box.id = 'battle-recovery';
+  box.style.marginTop = '12px';
+  box.style.padding = '10px 12px';
+  box.style.borderRadius = '8px';
+  box.style.border = '1px solid #dc2626';
+  box.style.background = 'rgba(220,38,38,0.08)';
+  box.style.display = 'flex';
+  box.style.flexDirection = 'column';
+  box.style.gap = '8px';
+  box.innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:#dc2626;">
+      ${headline}
+    </div>
+    <div style="display:flex;gap:6px;">
+      ${activeId ? `
+        <button id="btn-resume-battle"
+          style="flex:1;padding:6px 10px;border-radius:6px;border:none;
+                 background:#0058bc;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">
+          배틀로 돌아가기
+        </button>` : ''}
+      <button id="btn-forfeit-battle"
+        style="flex:1;padding:6px 10px;border-radius:6px;
+               border:1px solid #dc2626;background:transparent;color:#dc2626;
+               font-size:12px;font-weight:700;cursor:pointer;">
+        ${activeId ? '포기하기' : '강제 해제'}
+      </button>
+    </div>
+  `;
+  card.appendChild(box);
 
-    empty.style.display = 'none';
-    requests.forEach(request => {
-      const div = document.createElement('div');
-      div.className = 'request-box';
-      div.innerHTML = `
-        <span class="request-text">
-          <strong class="request-user-name">${request.requester_nickname}</strong>님이 배틀을 신청했습니다.
-        </span>
-        <div class="request-actions">
-          <button class="px-md py-sm bg-primary text-on-primary rounded-lg font-bold text-sm hover:bg-primary-container transition-all btn-accept" data-id="${request.id}">수락</button>
-          <button class="px-md py-sm border border-outline-variant text-secondary rounded-lg text-sm hover:text-red-500 transition-all btn-reject" data-id="${request.id}">거절</button>
-        </div>
-      `;
-      div.querySelector('.btn-accept').addEventListener('click', () => acceptRequest(request.id));
-      div.querySelector('.btn-reject').addEventListener('click', () => rejectRequest(request.id));
-      list.appendChild(div);
+  const resumeBtn = document.getElementById('btn-resume-battle');
+  if (resumeBtn) {
+    resumeBtn.addEventListener('click', () => {
+      window.location.href = `/battle?battle_id=${activeId}`;
     });
-  } catch (error) {
-    console.warn('pending requests load failed:', error.message);
   }
+
+  document.getElementById('btn-forfeit-battle').addEventListener('click', async () => {
+    const confirmMsg = activeId
+      ? '정말 포기하시겠습니까? 상대방이 승리 처리됩니다.'
+      : '배틀 상태를 강제로 해제하시겠습니까?';
+    if (!confirm(confirmMsg)) return;
+    try {
+      await apiRequest('/users/me/forfeit', { method: 'POST' });
+      box.remove();
+      await loadMyProfile();
+    } catch (err) {
+      /* API 가 없는(백엔드 미재시작) 경우의 fallback — 직접 매칭 큐 호출로 우회 */
+      console.warn('forfeit 실패, 폴백 시도:', err.message);
+      try {
+        /* DELETE /match/queue 는 stuck 해제 부수효과는 없지만, 다음 매칭 시도에서
+           _reset_stuck_battling 이 작동한다. 사용자에게 안내. */
+        await apiRequest('/match/queue', { method: 'DELETE' });
+      } catch (_) {}
+      alert(
+        '강제 해제 API 호출 실패: ' + err.message +
+        '\n\n백엔드 서버 재시작이 필요할 수 있습니다.\n' +
+        '재시작 후 새로고침하면 자동으로 해제됩니다.'
+      );
+    }
+  });
 }
 
 /* ── 온라인 유저 목록 ── */
 function statusClass(user) {
   if (user.is_battling) return 'status-battling';
-  if (user.is_online) return 'status-online';
+  if (user.is_online)   return 'status-online';
   return 'status-matching';
 }
-
 function statusLabel(user) {
   if (user.is_battling) return '● 배틀 중';
-  if (user.is_online) return '● 대기 중';
+  if (user.is_online)   return '● 대기 중';
   return '● 매칭 중';
 }
 
@@ -131,25 +173,45 @@ async function loadOnlineUsers() {
   const tbody = document.getElementById('online-users-tbody');
   if (!tbody) return;
 
+  /* 본인 식별값이 아직 없으면 먼저 프로필 조회 — 어떤 순서로 호출돼도
+     자기 자신이 절대 목록에 표시되지 않도록 한다. */
+  if (!myUserId) {
+    try { await loadMyProfile(); } catch (_) {}
+    if (!myUserId) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">불러오는 중...</td></tr>';
+      return;
+    }
+  }
+
   try {
     const users = await apiRequest('/users/online');
-    if (users.length === 0) {
+    /* 백엔드도 본인을 제외하지만 캐시/구버전 응답에 대비해 한 번 더 필터.
+       user_id 와 PK 모두로 비교 — 어떤 필드로 와도 차단. */
+    const others = users.filter(u =>
+      u.user_id !== myUserId &&
+      String(u.id ?? '') !== String(myUserPk ?? '')
+    );
+    onlineUsersCache = others;
+
+    if (others.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">온라인 사용자 없음</td></tr>';
       return;
     }
 
-    tbody.innerHTML = users.map(user => {
+    tbody.innerHTML = others.map(user => {
       const canRequest = user.is_online && !user.is_battling;
-      const button = canRequest
-        ? `<button class="btn-request-user px-sm py-1 border border-outline-variant text-secondary rounded text-xs hover:border-primary hover:text-primary transition-all"
-             data-user-id="${user.user_id}" data-nickname="${user.nickname}">배틀 신청</button>`
-        : '<button class="px-sm py-1 border border-outline-variant text-secondary rounded text-xs opacity-40" disabled>신청 불가</button>';
+      const btn = canRequest
+        ? `<button class="btn-request-user px-sm py-1 border border-outline-variant text-secondary
+                          rounded text-xs hover:border-primary hover:text-primary transition-all"
+                   data-user-id="${user.user_id}" data-nickname="${user.nickname}">배틀 신청</button>`
+        : `<button class="px-sm py-1 border border-outline-variant text-secondary rounded text-xs opacity-40"
+                   disabled>신청 불가</button>`;
 
       return `<tr>
         <td>${user.nickname}</td>
         <td class="text-muted-mono">${user.user_id}</td>
         <td><span class="${statusClass(user)}">${statusLabel(user)}</span></td>
-        <td>${button}</td>
+        <td>${btn}</td>
       </tr>`;
     }).join('');
 
@@ -160,7 +222,8 @@ async function loadOnlineUsers() {
     });
   } catch (error) {
     console.warn('online users load failed:', error.message);
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">불러오기 실패</td></tr>';
+    const tbody = document.getElementById('online-users-tbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">불러오기 실패</td></tr>';
   }
 }
 
@@ -168,11 +231,43 @@ async function loadOnlineUsers() {
 const requestButton = document.getElementById('btn-request-battle');
 const opponentInput = document.getElementById('opponent-nickname');
 
-function goBattleRequest(userId, nickname) {
-  const targetId = (userId || opponentInput?.value || '').trim();
+async function goBattleRequest(userId, nickname) {
+  const targetId   = (userId || opponentInput?.value || '').trim();
   const displayName = nickname || targetId;
   if (!targetId) return;
-  window.location.href = `/matching?mode=request&opponent=${encodeURIComponent(displayName)}&target=${encodeURIComponent(targetId)}`;
+
+  /* 자기 자신 신청 방지 */
+  if (targetId === myUserId || targetId === String(myUserPk ?? '')) {
+    alert('자기 자신에게는 배틀을 신청할 수 없습니다.');
+    return;
+  }
+
+  /* 온라인 여부 사전 검증 — 매칭 페이지 진입 전에 차단.
+     온라인 사용자 캐시에 없으면 오프라인으로 간주.
+     백엔드 /users/{id} 는 user_id 기준이라 닉네임 입력은 못 찾으므로
+     이 단계에서는 캐시 매칭만 신뢰하고, 서버 검증은 /match/request 에 위임. */
+  const cached = onlineUsersCache.find(
+    u => u.user_id === targetId || u.nickname === targetId
+  );
+
+  if (cached) {
+    if (!cached.is_online) {
+      alert('오프라인 사용자입니다.');
+      return;
+    }
+    if (cached.is_battling) {
+      alert('상대방이 이미 배틀 중입니다.');
+      return;
+    }
+  } else {
+    /* 캐시에 없는 경우 — 입력값이 닉네임/ID 어느 쪽이든 온라인 목록에 없는 사용자.
+       온라인이 아니라면 오프라인 사용자로 간주하고 진입을 막는다. */
+    alert('오프라인 사용자입니다. 온라인 상태인 사용자에게만 배틀을 신청할 수 있습니다.');
+    return;
+  }
+
+  const resolvedDisplay = nickname || cached?.nickname || displayName;
+  window.location.href = `/matching?mode=request&opponent=${encodeURIComponent(resolvedDisplay)}&target=${encodeURIComponent(targetId)}`;
 }
 
 if (requestButton && opponentInput) {
@@ -182,38 +277,10 @@ if (requestButton && opponentInput) {
   });
 }
 
-/* ── 로비 WebSocket (실시간 배틀 신청 수신 + match_found) ── */
-function connectLobbyWs() {
-  const token = getToken();
-  if (!token) return;
-
-  const ws = new WebSocket(getWsUrl(`/ws/lobby?token=${encodeURIComponent(token)}`));
-
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      if (data.type === 'battle_request') {
-        // 새 배틀 신청 도착 → 목록 갱신
-        loadPendingRequests();
-      } else if (data.type === 'match_found') {
-        window.location.href = `/battle?battle_id=${data.battle_id}`;
-      }
-    } catch (e) {
-      console.warn('WS 파싱 오류', e);
-    }
-  };
-
-  ws.onerror = (err) => console.warn('lobby WS error', err);
-  ws.onclose = () => console.warn('lobby WS closed');
-}
-
-/* ── 주기적 갱신 ── */
-async function refreshAll() {
-  await Promise.all([loadPendingRequests(), loadOnlineUsers()]);
-}
-
 /* ── 초기화 ── */
-loadMyProfile();
-refreshAll();
-connectLobbyWs();
-setInterval(refreshAll, 30000);
+/* myUserId 가 설정된 뒤 온라인 목록을 불러와야 본인 제외 필터가 정확히 동작. */
+(async () => {
+  await loadMyProfile();
+  await loadOnlineUsers();
+  setInterval(loadOnlineUsers, 5000);   // 온라인 목록은 5초마다 갱신
+})();

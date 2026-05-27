@@ -20,6 +20,23 @@ body {
   font-weight: 700;
 }
 
+/* 상단바의 문제 칩 — 패널이 닫혀 있어도 어떤 문제인지 항상 확인 가능 */
+.nav-problem-chip {
+  max-width: 260px;
+  background: #f6f3f2;
+  white-space: nowrap;
+}
+.nav-problem-chip .truncate {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html.dark .nav-problem-chip,
+body.dark-preview .nav-problem-chip {
+  background: #1f2a44;
+  border-color: #2f3743;
+}
+
 .main-area {
   position: relative;
   display: flex;

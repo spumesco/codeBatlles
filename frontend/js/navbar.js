@@ -19,14 +19,14 @@ async function loadNavbar() {
 
   const hasToken = Boolean(getToken());
   let currentUser = null;
-  let navbarPath = '/components/guest-navbar.html';
+  /* 로그인 여부만으로 파일 선택 — 관리자 탭은 JS에서 처리 */
+  const navbarPath = hasToken
+    ? '/components/user-navbar.html'
+    : '/components/guest-navbar.html';
 
   if (hasToken) {
     try {
       currentUser = await getMe();
-      navbarPath = isAdminUser(currentUser)
-        ? '/components/admin-navbar.html'
-        : '/components/user-navbar.html';
     } catch (error) {
       console.warn(error.message);
       clearToken();
@@ -47,6 +47,19 @@ async function loadNavbar() {
   if (hasToken) {
     bindLogoutButton();
     hydrateUserNavbar(currentUser);
+
+    /* DB 의 role 값이 정확히 'admin' 인 사용자만 표시.
+       그 외에는 inline style 로 강제로 숨겨서 CSS 우선순위 문제로
+       비관리자에게 ADMIN 배지가 노출되는 사고를 차단. */
+    const adminLink  = document.getElementById('navbar-admin-link');
+    const adminBadge = document.getElementById('navbar-admin-badge');
+    if (isAdminUser(currentUser)) {
+      if (adminLink)  { adminLink.classList.remove('hidden');  adminLink.style.display  = ''; }
+      if (adminBadge) { adminBadge.classList.remove('hidden'); adminBadge.style.display = 'inline-flex'; }
+    } else {
+      if (adminLink)  { adminLink.classList.add('hidden');  adminLink.style.display  = 'none'; }
+      if (adminBadge) { adminBadge.classList.add('hidden'); adminBadge.style.display = 'none'; }
+    }
   }
 
   return container;
@@ -63,6 +76,9 @@ function bindLogoutButton() {
     apiLogout().catch(error => {
       console.warn(error.message);
     });
+
+    /* 다음 로그인 사용자에게 잔여 매칭 상태가 남지 않도록 정리 */
+    try { localStorage.removeItem('matching_state'); } catch (_) {}
 
     clearToken();
     window.location.replace('/');

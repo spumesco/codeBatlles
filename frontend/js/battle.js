@@ -61,9 +61,22 @@ function hideCountdown() {
   if (modal) modal.classList.add('hidden');
 }
 
+/* 가장 최근에 받은 문제 — 내비바가 늦게 로드되더라도 제목을 채울 수 있게 캐시 */
+let currentProblem = null;
+
+function setNavbarProblemTitle() {
+  if (!currentProblem) return;
+  const navTitle = document.getElementById('navbar-problem-title');
+  if (navTitle) {
+    navTitle.textContent = currentProblem.title || '-';
+    navTitle.title       = currentProblem.title || '';
+  }
+}
+
 /* ── 문제 렌더링 ── */
 function renderProblem(problem) {
   if (!problem) return;
+  currentProblem = problem;
   document.getElementById('problemTitle').textContent = problem.title || '-';
   document.getElementById('problemDifficulty').textContent = problem.difficulty || '-';
   document.getElementById('problemTimeLimit').textContent = problem.time_limit ?? '-';
@@ -73,6 +86,23 @@ function renderProblem(problem) {
   document.getElementById('problemOutputDescription').textContent = problem.output_description || '-';
   document.getElementById('problemSampleInput').textContent = problem.sample_input || '-';
   document.getElementById('problemSampleOutput').textContent = problem.sample_output || '-';
+
+  /* 상단바에 문제 제목 노출 — 패널이 닫혀 있어도 어떤 문제인지 항상 보이게.
+     내비바가 아직 로드되지 않았다면 setNavbarProblemTitle 이 나중에 채움. */
+  setNavbarProblemTitle();
+}
+
+/* 문제 패널 자동 열기 — 처음 한 번만 (사용자가 닫았으면 다시 열지 않음) */
+let drawerAutoOpened = false;
+function ensureDrawerOpen() {
+  if (drawerAutoOpened) return;
+  drawerAutoOpened = true;
+  const drawer = document.getElementById('drawer');
+  const toggleButton = document.getElementById('toggleDrawer');
+  if (drawer && !drawer.classList.contains('open')) {
+    drawer.classList.add('open');
+    if (toggleButton) toggleButton.textContent = '문제 닫기';
+  }
 }
 
 async function loadBattleProblem() {
@@ -83,6 +113,8 @@ async function loadBattleProblem() {
     if (!battle.problem_id) return;
     const problem = await apiRequest(`/problems/${battle.problem_id}`);
     renderProblem(problem);
+    /* 문제가 로드되면 패널을 자동으로 펼쳐 어떤 문제인지 즉시 보이게 한다. */
+    ensureDrawerOpen();
   } catch (error) {
     console.warn('문제 로드 실패', error);
   }
@@ -112,7 +144,7 @@ function handleWsMessage(data) {
       break;
 
     case 'battle_end':
-      onBattleEnd(data.winner_id);
+      onBattleEnd(data.winner_id, data.reason);
       break;
 
     case 'code_update':
@@ -121,19 +153,29 @@ function handleWsMessage(data) {
   }
 }
 
-async function onBattleEnd(winnerId) {
+let battleEnded = false;
+async function onBattleEnd(winnerId, reason) {
+  if (battleEnded) return;     // 중복 이벤트 보호
+  battleEnded = true;
   const resultEl = document.getElementById('judgeResult');
   try {
     const me = await getMe();
     const isWinner = me.id === winnerId;
+    let label = isWinner ? '🎉 승리!' : '패배...';
+    if (reason === 'opponent_disconnected') {
+      label = isWinner ? '🎉 승리 (상대 연결 끊김)' : '연결이 끊겨 배틀이 종료되었습니다.';
+    } else if (reason === 'opponent_forfeit') {
+      label = isWinner ? '🎉 승리 (상대 포기)' : '배틀을 포기했습니다.';
+    }
     if (resultEl) {
-      resultEl.textContent = isWinner ? '🎉 승리!' : '패배...';
+      resultEl.textContent = label;
       resultEl.style.color = isWinner ? '#16a34a' : '#dc2626';
     }
   } catch (e) {
     console.warn(e);
   }
   setTimeout(() => {
+    isLeavingForResult = true;   /* 결과 페이지 이동은 포기 신호로 잡지 않음 */
     window.location.href = `/result?battle_id=${getBattleId()}`;
   }, 2000);
 }
@@ -169,6 +211,52 @@ function connectBattleWs() {
     });
   }
 }
+
+/* ── 사용자가 명시적으로 배틀 종료(포기) 클릭 ── */
+async function endBattleByUser(btnEl) {
+  if (battleEnded) return;
+  const ok = confirm('배틀을 종료하시겠습니까?\n진행 중이면 상대방의 승리로 처리됩니다.');
+  if (!ok) return;
+
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = '종료 중...'; }
+
+  /* 1) WS 가 살아있으면 즉시 forfeit 메시지 — 백엔드가 바로 end_battle 실행 */
+  if (battleWs && battleWs.readyState === WebSocket.OPEN) {
+    try { battleWs.send(JSON.stringify({ type: 'forfeit' })); } catch (_) {}
+  }
+
+  /* 2) HTTP 로도 한 번 더 — WS 가 실패해도 보장. /users/me/forfeit 는 이미 진행 중인 배틀을
+        상대 승으로 종료해 주고, 진행 중인 배틀이 없으면 플래그만 정리한다. */
+  try {
+    await apiRequest('/users/me/forfeit', { method: 'POST' });
+  } catch (err) {
+    console.warn('forfeit API 실패:', err.message);
+  }
+
+  /* 3) WS battle_end 가 도착하면 onBattleEnd 가 /result 로 이동시키지만,
+        WS 가 죽었거나 늦어질 수 있으니 짧은 fallback. */
+  setTimeout(() => {
+    if (battleEnded) return;
+    isLeavingForResult = true;
+    window.location.href = `/result?battle_id=${getBattleId()}`;
+  }, 1500);
+}
+
+/* ── 페이지 종료/이탈 시 자동 포기 ──
+   - 배틀 종료 후의 /result 이동은 unloading 플래그로 구분해 forfeit 신호 보내지 않음.
+   - 진행 중 상태라면 사용자가 의도적으로 떠난 것으로 간주하고 즉시 종료 신호 송신.
+   - WS 가 안 가도 백엔드의 grace forfeit 가 3초 후에 동일하게 처리. */
+let isLeavingForResult = false;
+
+function sendForfeitIfPlaying() {
+  if (battleEnded || isLeavingForResult) return;
+  if (battleWs && battleWs.readyState === WebSocket.OPEN) {
+    try { battleWs.send(JSON.stringify({ type: 'forfeit' })); } catch (_) {}
+  }
+}
+
+window.addEventListener('pagehide',     sendForfeitIfPlaying);
+window.addEventListener('beforeunload', sendForfeitIfPlaying);
 
 /* ── 코드 제출 ── */
 async function submitCode() {
@@ -217,22 +305,37 @@ async function loadBattleNavbar() {
   if (!container) return;
 
   let currentUser = null;
-  let navbarPath = '/components/battle-navbar.html';
-
   try {
     currentUser = await getMe();
-    if (isAdminUser(currentUser)) navbarPath = '/components/admin-navbar.html';
   } catch (error) {
     console.warn(error.message);
   }
 
   try {
-    const res = await fetch(navbarPath + '?v=' + Date.now(), { cache: 'no-store' });
+    const res = await fetch('/components/battle-navbar.html?v=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`navbar load failed: ${res.status}`);
     container.innerHTML = await res.text();
+
+    // 닉네임 채우기
     const nickname = document.getElementById('navbar-nickname');
     if (nickname && currentUser) nickname.textContent = currentUser.nickname || '-';
 
+    /* 내비바 DOM 이 막 삽입됐으므로, 이전에 로드된 문제 제목을 지금 채워준다. */
+    setNavbarProblemTitle();
+
+    // 관리자만 관리자 탭 표시, 비관리자는 inline style 로도 차단
+    const adminLink = document.getElementById('navbar-admin-link');
+    if (adminLink) {
+      if (isAdminUser(currentUser)) {
+        adminLink.classList.remove('hidden');
+        adminLink.style.display = '';
+      } else {
+        adminLink.classList.add('hidden');
+        adminLink.style.display = 'none';
+      }
+    }
+
+    // 로그아웃 바인딩
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', (e) => {
@@ -242,6 +345,12 @@ async function loadBattleNavbar() {
         clearToken();
         window.location.replace('/');
       });
+    }
+
+    // 배틀 종료(포기) 버튼 — 즉시 forfeit 처리 후 결과 페이지로
+    const endBattleBtn = document.getElementById('btn-end-battle');
+    if (endBattleBtn) {
+      endBattleBtn.addEventListener('click', () => endBattleByUser(endBattleBtn));
     }
   } catch (error) {
     console.warn(error.message);
@@ -256,8 +365,17 @@ function bindBattleEvents() {
   if (submitButton) submitButton.addEventListener('click', submitCode);
 }
 
+/* ── 코드 에디터 보강 (자동 괄호 + 들여쓰기) ── */
+function setupCodeEditor() {
+  const editor = document.getElementById('myCodeEditor');
+  if (editor && typeof enhanceCodeEditor === 'function') {
+    enhanceCodeEditor(editor);
+  }
+}
+
 /* ── 초기화 ── */
 loadBattleNavbar();
 bindBattleEvents();
 connectBattleWs();
 loadBattleProblem();
+setupCodeEditor();

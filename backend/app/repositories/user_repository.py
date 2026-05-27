@@ -29,8 +29,11 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_online_users(db: AsyncSession) -> list[User]:
-        result = await db.execute(select(User).where(User.is_online == True))
+    async def get_online_users(db: AsyncSession, exclude_user_pk: int | None = None) -> list[User]:
+        stmt = select(User).where(User.is_online == True)
+        if exclude_user_pk is not None:
+            stmt = stmt.where(User.id != exclude_user_pk)
+        result = await db.execute(stmt)
         return list(result.scalars().all())
 
     @staticmethod

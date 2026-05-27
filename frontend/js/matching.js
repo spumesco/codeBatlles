@@ -1,9 +1,28 @@
+/* ────────────────────────────────────────────────────────────
+   matching.js — /matching 풀스크린 페이지
+
+   - 자동 매칭 큐 진입 또는 1v1 신청
+   - WS 는 lobby.js 가 공용으로 처리 (페이지 이동에도 유지)
+   - 매칭 상태는 localStorage 에 저장되어 다른 페이지에서 플로터로 표시
+──────────────────────────────────────────────────────────── */
+
 authGuard();
 
 const params = new URLSearchParams(window.location.search);
-const mode = params.get('mode');
-const opponent = params.get('opponent') || '상대 사용자';
-const targetUserId = params.get('target'); // 배틀 신청 시 상대방 user_id
+let mode         = params.get('mode');
+let opponent     = params.get('opponent') || '상대 사용자';
+let targetUserId = params.get('target');
+
+/* URL 에 mode 가 없으면 진행 중 상태(다른 페이지에서 플로터 클릭)에서 복원. */
+if (!mode && window.Lobby?.isMatching?.()) {
+  const restored = Lobby.getMatchingState();
+  if (restored) {
+    mode         = restored.mode || 'auto';
+    opponent     = restored.opponent || opponent;
+    targetUserId = restored.targetUserId || targetUserId;
+  }
+}
+if (!mode) mode = 'auto';  /* 기본값 */
 
 const waitTitle = document.getElementById('wait-title');
 const waitDescription = document.getElementById('wait-description');
@@ -22,7 +41,9 @@ if (mode === 'request') {
   if (cancelLink) cancelLink.textContent = '신청 취소';
 }
 
-/* ── 대기 타이머 ── */
+/* ── 대기 타이머 (페이지 진입 후 카운트) ──
+   다른 페이지에서 복귀했더라도 시각적 표시는 0부터 시작.
+   하단 플로터의 타이머는 startedAt 기준으로 별도 계산됨. */
 let sec = 0;
 setInterval(() => {
   sec++;
@@ -31,66 +52,60 @@ setInterval(() => {
   if (timerEl) timerEl.textContent = `${m}:${s}`;
 }, 1000);
 
-/* ── WebSocket 유틸 ── */
-function getWsUrl(path) {
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${proto}//${location.host}${path}`;
-}
-
-/* ── 로비 WebSocket 연결 ── */
-let lobbyWs = null;
-
-function connectLobbyWs() {
-  const token = getToken();
-  if (!token) return;
-
-  const url = getWsUrl(`/ws/lobby?token=${encodeURIComponent(token)}`);
-  lobbyWs = new WebSocket(url);
-
-  lobbyWs.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      if (data.type === 'match_found') {
-        window.location.href = `/battle?battle_id=${data.battle_id}`;
-      }
-    } catch (e) {
-      console.warn('WS 파싱 오류', e);
-    }
-  };
-
-  lobbyWs.onerror = (err) => console.warn('lobby WS error', err);
-  lobbyWs.onclose = () => console.warn('lobby WS closed');
-}
-
-/* ── 자동 매칭 큐 참가 ── */
+/* ── 매칭 진입 ── */
 async function joinQueue() {
+  /* 이미 매칭 진행 중이면 큐 재진입은 생략 — 서버는 중복 방지하지만
+     불필요한 호출 자체를 막는다. */
+  if (window.Lobby && !Lobby.isMatching()) {
+    Lobby.startMatching('auto');
+  } else if (window.Lobby) {
+    /* 모드가 다른 진행상태였다면 자동으로 덮어쓰기 */
+    const st = Lobby.getMatchingState();
+    if (!st || st.mode !== 'auto') Lobby.startMatching('auto');
+  }
+
   try {
     const result = await apiRequest('/match/queue', { method: 'POST' });
     if (result.status === 'matched') {
-      // 즉시 매칭된 경우
+      if (window.Lobby) Lobby.stopMatching();
       window.location.href = `/battle?battle_id=${result.battle_id}`;
     }
-    // 'waiting' 이면 WS로 match_found 수신 대기
+    /* 'waiting' → lobby.js 가 match_found 수신 시 자동 이동 */
   } catch (error) {
+    if (window.Lobby) Lobby.stopMatching();
     alert(error.message);
     window.location.href = '/main';
   }
 }
 
-/* ── 1v1 배틀 신청 전송 ── */
+/* ── 1v1 배틀 신청 ── */
 async function sendBattleRequest() {
   if (!targetUserId) {
     alert('상대방 정보가 없습니다.');
     window.location.href = '/main';
     return;
   }
+
+  /* 진행 중 상태에서 같은 상대로 복귀한 경우 신청을 또 보내지 않는다. */
+  if (window.Lobby?.isMatching?.()) {
+    const st = Lobby.getMatchingState();
+    if (st && st.mode === 'request' && st.targetUserId === targetUserId && st.requestId) {
+      /* 이미 신청을 보낸 상태 — 화면만 표시 */
+      return;
+    }
+  }
+
+  if (window.Lobby) Lobby.startMatching('request', opponent, targetUserId);
+
   try {
-    await apiRequest('/match/request', {
+    const result = await apiRequest('/match/request', {
       method: 'POST',
       body: JSON.stringify({ target_user_id: targetUserId }),
     });
-    // 수락 대기 — WS로 match_found 수신
+    if (window.Lobby) Lobby.setMatchingRequestId(result.request_id);
+    /* 수락/거절은 lobby.js 가 처리 */
   } catch (error) {
+    if (window.Lobby) Lobby.stopMatching();
     alert(error.message);
     window.location.href = '/main';
   }
@@ -99,27 +114,18 @@ async function sendBattleRequest() {
 /* ── 매칭 취소 ── */
 async function cancelMatching(e) {
   if (e) e.preventDefault();
-
-  if (lobbyWs) {
-    lobbyWs.onclose = null;
-    lobbyWs.close();
+  if (window.Lobby) {
+    await Lobby.cancelMatching();
   }
-
-  if (mode !== 'request') {
-    try {
-      await apiRequest('/match/queue', { method: 'DELETE' });
-    } catch (err) {
-      console.warn(err.message);
-    }
-  }
-
   window.location.href = '/main';
 }
 
-/* ── 초기화 ── */
-connectLobbyWs();
+/* ── lobby 이벤트 (match_found 는 lobby.js 가 자동 이동 처리) ──
+   여기서는 별도 처리 불필요. 거절 알림도 lobby.js 가 처리. */
 
+/* ── 초기화 ── */
 if (mode === 'request') {
+  /* 진행 중 상태에서 페이지 복귀한 경우, 같은 신청을 또 보내지 않도록 sendBattleRequest 가 가드. */
   sendBattleRequest();
 } else {
   joinQueue();
