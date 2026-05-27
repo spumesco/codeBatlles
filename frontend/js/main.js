@@ -49,18 +49,24 @@ async function loadMyProfile() {
     myUserPk = user.id;
 
     /* 배틀 상태 자가 점검 — stuck (is_battling=true 인데 실제 배틀 없음) 자동 해제,
-       진짜 진행 중인 배틀이면 복귀 패널 노출. */
+       진짜 진행 중인 배틀이면 복귀 패널 노출.
+       API 가 실패하더라도 UI 가 갇히지 않도록 catch 처리. */
     let battleState = null;
     try {
       battleState = await apiRequest('/users/me/battle-state');
       /* 서버가 플래그를 갱신했을 수 있으니 화면용 사본에 동기화. */
       user.is_battling = !!battleState.is_battling;
     } catch (e) {
-      console.warn('battle-state 조회 실패', e.message);
+      console.warn('battle-state 조회 실패 — 강제 해제 버튼으로 복구 가능', e.message);
     }
 
     renderMyProfile(user);
-    renderBattleRecovery(battleState);
+    /* user.is_battling 이 true 거나 active battle 이 살아있을 때 항상 복구 패널 노출.
+       API 가 죽었어도 사용자는 강제 해제로 빠져나올 수 있다. */
+    renderBattleRecovery({
+      is_battling: !!user.is_battling,
+      active_battle_id: battleState?.active_battle_id ?? null,
+    });
   } catch (error) {
     console.warn(error.message);
     clearToken();
@@ -69,16 +75,23 @@ async function loadMyProfile() {
 }
 
 /* ── 진행 중인 배틀 복귀/포기 패널 ──
-   stuck 자동 정리 후에도 active battle 이 살아 있으면 복귀/포기 버튼을 보여준다. */
+   - is_battling=true 면 항상 노출 (백엔드 API 죽어도 출구 보장)
+   - active_battle_id 있으면 "배틀로 돌아가기" 버튼 활성화
+   - 없거나 stuck 이면 "강제 해제" 만 노출 */
 function renderBattleRecovery(state) {
   const existing = document.getElementById('battle-recovery');
   if (existing) existing.remove();
 
-  if (!state || !state.active_battle_id) return;
+  if (!state || !state.is_battling) return;
 
   const meStatus = document.getElementById('me-status');
   if (!meStatus) return;
   const card = meStatus.closest('.card') || meStatus.parentElement;
+
+  const activeId = state.active_battle_id;
+  const headline = activeId
+    ? `진행 중인 배틀이 있습니다 (#${activeId})`
+    : '배틀 상태가 남아있습니다 — 강제 해제로 복구할 수 있어요.';
 
   const box = document.createElement('div');
   box.id = 'battle-recovery';
@@ -92,35 +105,54 @@ function renderBattleRecovery(state) {
   box.style.gap = '8px';
   box.innerHTML = `
     <div style="font-size:12px;font-weight:700;color:#dc2626;">
-      진행 중인 배틀이 있습니다 (#${state.active_battle_id})
+      ${headline}
     </div>
     <div style="display:flex;gap:6px;">
-      <button id="btn-resume-battle"
-        style="flex:1;padding:6px 10px;border-radius:6px;border:none;
-               background:#0058bc;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">
-        배틀로 돌아가기
-      </button>
+      ${activeId ? `
+        <button id="btn-resume-battle"
+          style="flex:1;padding:6px 10px;border-radius:6px;border:none;
+                 background:#0058bc;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">
+          배틀로 돌아가기
+        </button>` : ''}
       <button id="btn-forfeit-battle"
         style="flex:1;padding:6px 10px;border-radius:6px;
                border:1px solid #dc2626;background:transparent;color:#dc2626;
                font-size:12px;font-weight:700;cursor:pointer;">
-        포기하기
+        ${activeId ? '포기하기' : '강제 해제'}
       </button>
     </div>
   `;
   card.appendChild(box);
 
-  document.getElementById('btn-resume-battle').addEventListener('click', () => {
-    window.location.href = `/battle?battle_id=${state.active_battle_id}`;
-  });
+  const resumeBtn = document.getElementById('btn-resume-battle');
+  if (resumeBtn) {
+    resumeBtn.addEventListener('click', () => {
+      window.location.href = `/battle?battle_id=${activeId}`;
+    });
+  }
+
   document.getElementById('btn-forfeit-battle').addEventListener('click', async () => {
-    if (!confirm('정말 포기하시겠습니까? 상대방이 승리 처리됩니다.')) return;
+    const confirmMsg = activeId
+      ? '정말 포기하시겠습니까? 상대방이 승리 처리됩니다.'
+      : '배틀 상태를 강제로 해제하시겠습니까?';
+    if (!confirm(confirmMsg)) return;
     try {
       await apiRequest('/users/me/forfeit', { method: 'POST' });
       box.remove();
       await loadMyProfile();
     } catch (err) {
-      alert('포기 처리 실패: ' + err.message);
+      /* API 가 없는(백엔드 미재시작) 경우의 fallback — 직접 매칭 큐 호출로 우회 */
+      console.warn('forfeit 실패, 폴백 시도:', err.message);
+      try {
+        /* DELETE /match/queue 는 stuck 해제 부수효과는 없지만, 다음 매칭 시도에서
+           _reset_stuck_battling 이 작동한다. 사용자에게 안내. */
+        await apiRequest('/match/queue', { method: 'DELETE' });
+      } catch (_) {}
+      alert(
+        '강제 해제 API 호출 실패: ' + err.message +
+        '\n\n백엔드 서버 재시작이 필요할 수 있습니다.\n' +
+        '재시작 후 새로고침하면 자동으로 해제됩니다.'
+      );
     }
   });
 }
