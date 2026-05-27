@@ -121,6 +121,24 @@ def admin_problems_page():
 
 @app.get("/api/health")
 def health_check():
-    return {"message": "CodeBattles backend is running"}
+    """배포 진단용. 운영 백엔드가 신/구 어느 코드인지, 폴백 채점이 가능한지 한 번에 확인."""
+    info: dict = {"message": "CodeBattles backend is running"}
+
+    # 로컬 폴백 채점기 상태 — 'judge_local_supported' 가 있으면 신 백엔드.
+    try:
+        from app.services.local_executor import LocalExecutor
+        info["judge_local_supported"] = LocalExecutor.supported_languages()
+    except Exception as e:
+        info["judge_local_supported"] = f"unavailable: {e!s}"
+
+    # Judge0 폴백 토글
+    try:
+        from app.services.judge_service import USE_LOCAL_FALLBACK, HAS_HTTPX
+        info["use_local_fallback"] = USE_LOCAL_FALLBACK
+        info["has_httpx"] = HAS_HTTPX
+    except Exception as e:
+        info["judge_service"] = f"import failed: {e!s}"
+
+    return info
 
 
