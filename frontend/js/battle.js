@@ -144,7 +144,7 @@ function handleWsMessage(data) {
       break;
 
     case 'battle_end':
-      onBattleEnd(data.winner_id);
+      onBattleEnd(data.winner_id, data.reason);
       break;
 
     case 'code_update':
@@ -153,19 +153,29 @@ function handleWsMessage(data) {
   }
 }
 
-async function onBattleEnd(winnerId) {
+let battleEnded = false;
+async function onBattleEnd(winnerId, reason) {
+  if (battleEnded) return;     // 중복 이벤트 보호
+  battleEnded = true;
   const resultEl = document.getElementById('judgeResult');
   try {
     const me = await getMe();
     const isWinner = me.id === winnerId;
+    let label = isWinner ? '🎉 승리!' : '패배...';
+    if (reason === 'opponent_disconnected') {
+      label = isWinner ? '🎉 승리 (상대 연결 끊김)' : '연결이 끊겨 배틀이 종료되었습니다.';
+    } else if (reason === 'opponent_forfeit') {
+      label = isWinner ? '🎉 승리 (상대 포기)' : '배틀을 포기했습니다.';
+    }
     if (resultEl) {
-      resultEl.textContent = isWinner ? '🎉 승리!' : '패배...';
+      resultEl.textContent = label;
       resultEl.style.color = isWinner ? '#16a34a' : '#dc2626';
     }
   } catch (e) {
     console.warn(e);
   }
   setTimeout(() => {
+    isLeavingForResult = true;   /* 결과 페이지 이동은 포기 신호로 잡지 않음 */
     window.location.href = `/result?battle_id=${getBattleId()}`;
   }, 2000);
 }
@@ -201,6 +211,22 @@ function connectBattleWs() {
     });
   }
 }
+
+/* ── 페이지 종료/이탈 시 자동 포기 ──
+   - 배틀 종료 후의 /result 이동은 unloading 플래그로 구분해 forfeit 신호 보내지 않음.
+   - 진행 중 상태라면 사용자가 의도적으로 떠난 것으로 간주하고 즉시 종료 신호 송신.
+   - WS 가 안 가도 백엔드의 grace forfeit 가 3초 후에 동일하게 처리. */
+let isLeavingForResult = false;
+
+function sendForfeitIfPlaying() {
+  if (battleEnded || isLeavingForResult) return;
+  if (battleWs && battleWs.readyState === WebSocket.OPEN) {
+    try { battleWs.send(JSON.stringify({ type: 'forfeit' })); } catch (_) {}
+  }
+}
+
+window.addEventListener('pagehide',     sendForfeitIfPlaying);
+window.addEventListener('beforeunload', sendForfeitIfPlaying);
 
 /* ── 코드 제출 ── */
 async function submitCode() {

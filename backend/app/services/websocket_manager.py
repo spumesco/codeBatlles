@@ -23,11 +23,19 @@ class WebSocketManager:
         await ws.accept()
         if battle_id not in self.battle_connections:
             self.battle_connections[battle_id] = {}
+        # 새 연결로 갱신 — 이전 연결의 disconnect 핸들러는 ws 객체 비교로 새 것을 건드리지 않는다.
         self.battle_connections[battle_id][user_pk] = ws
 
-    def disconnect_battle(self, battle_id: int, user_pk: int) -> None:
-        if battle_id in self.battle_connections:
-            self.battle_connections[battle_id].pop(user_pk, None)
+    def disconnect_battle(self, battle_id: int, user_pk: int, ws: WebSocket = None) -> None:
+        """ws 를 넘기면 현재 저장된 연결과 동일한 객체일 때만 제거한다.
+        새로고침/페이지 재진입으로 새 연결이 먼저 등록된 경우 새 연결을 보호."""
+        conns = self.battle_connections.get(battle_id)
+        if not conns:
+            return
+        if ws is None or conns.get(user_pk) is ws:
+            conns.pop(user_pk, None)
+        if not conns:
+            self.battle_connections.pop(battle_id, None)
 
     async def send_to_user(self, user_pk: int, data: dict) -> None:
         ws = self.lobby_connections.get(user_pk)
@@ -68,11 +76,14 @@ class WebSocketManager:
             "code": code,
         }, exclude_user=user_pk)
 
-    async def broadcast_battle_end(self, battle_id: int, winner_id: int) -> None:
-        await self.broadcast_to_battle(battle_id, {
+    async def broadcast_battle_end(self, battle_id: int, winner_id: int, reason: str | None = None) -> None:
+        payload = {
             "type": "battle_end",
             "winner_id": winner_id,
-        })
+        }
+        if reason:
+            payload["reason"] = reason
+        await self.broadcast_to_battle(battle_id, payload)
 
 
 ws_manager = WebSocketManager()

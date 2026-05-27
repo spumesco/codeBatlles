@@ -60,11 +60,19 @@ class BattleService:
         return judge_result
 
     @staticmethod
-    async def end_battle(db: AsyncSession, battle_id: int, winner_id: int) -> None:
+    async def end_battle(
+        db: AsyncSession,
+        battle_id: int,
+        winner_id: int,
+        reason: str | None = None,
+    ) -> None:
         result = await db.execute(select(Battle).where(Battle.id == battle_id))
         battle = result.scalar_one_or_none()
-        
+
         if not battle:
+            return
+        # 이미 종료된 배틀이면 중복 처리 방지 — 동시 disconnect/submit 경합 보호.
+        if battle.status == "finished" or battle.winner_id is not None:
             return
 
         await db.execute(
@@ -97,4 +105,4 @@ class BattleService:
         )
 
         await db.commit()
-        await ws_manager.broadcast_battle_end(battle_id, winner_id)
+        await ws_manager.broadcast_battle_end(battle_id, winner_id, reason=reason)
