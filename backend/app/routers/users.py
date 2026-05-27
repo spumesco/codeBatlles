@@ -1,18 +1,86 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.auth.dependencies import get_current_user
+from app.models.battle import Battle
 from app.repositories.battle_repository import BattleRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.battle import BattleRead
 from app.schemas.user import UserRead, UserSummary
+from app.services.battle_service import BattleService
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+async def _find_active_battle(db: AsyncSession, user_pk: int) -> Battle | None:
+    result = await db.execute(
+        select(Battle)
+        .where(
+            ((Battle.player1_id == user_pk) | (Battle.player2_id == user_pk)),
+            Battle.status.in_(["ready", "running"]),
+        )
+        .order_by(Battle.id.desc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
 
 @router.get("/me", response_model=UserRead)
 async def get_my_profile(current_user=Depends(get_current_user)):
     return current_user
+
+
+@router.get("/me/battle-state")
+async def get_battle_state(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """현재 사용자의 배틀 상태를 조회하며, 'is_battling=True 인데 진행 중인 배틀이 없는'
+    stuck 상태를 자동으로 정리한다.
+    응답:
+      - active_battle_id: 진행/대기 중인 배틀 ID (없으면 null)
+      - is_battling: 정리 후의 실제 상태
+    """
+    active = await _find_active_battle(db, current_user.id)
+    if active:
+        # 실제로 배틀 중이면 플래그도 True 로 동기화 (없으면 그대로 둠).
+        if not current_user.is_battling:
+            await UserRepository.update_battling_status(db, current_user.id, True)
+        return {"active_battle_id": active.id, "is_battling": True}
+
+    # 진행 중인 배틀이 없는데 플래그가 켜져 있으면 stuck — 자동 해제.
+    if current_user.is_battling:
+        await UserRepository.update_battling_status(db, current_user.id, False)
+    return {"active_battle_id": None, "is_battling": False}
+
+
+@router.post("/me/forfeit")
+async def forfeit_current_battle(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """진행 중인 내 배틀을 강제로 포기 처리한다.
+    - 진행 중인 배틀이 있으면 상대 승으로 종료
+    - 없으면 is_battling 플래그만 정리
+    """
+    active = await _find_active_battle(db, current_user.id)
+    if active:
+        opponent_id = (
+            active.player2_id if current_user.id == active.player1_id else active.player1_id
+        )
+        if opponent_id is not None:
+            await BattleService.end_battle(
+                db, active.id, opponent_id, reason="opponent_forfeit"
+            )
+        else:
+            await UserRepository.update_battling_status(db, current_user.id, False)
+        return {"forfeited": True, "battle_id": active.id}
+
+    # 진행 중인 배틀 없음 — 플래그만 정리
+    if current_user.is_battling:
+        await UserRepository.update_battling_status(db, current_user.id, False)
+    return {"forfeited": False, "battle_id": None}
 
 @router.get("/online", response_model=list[UserSummary])
 async def get_online_users(
