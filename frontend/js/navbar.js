@@ -48,12 +48,17 @@ async function loadNavbar() {
     bindLogoutButton();
     hydrateUserNavbar(currentUser);
 
-    /* 관리자면 숨겨진 탭 + 배지 표시 */
+    /* DB 의 role 값이 정확히 'admin' 인 사용자만 표시.
+       그 외에는 inline style 로 강제로 숨겨서 CSS 우선순위 문제로
+       비관리자에게 ADMIN 배지가 노출되는 사고를 차단. */
+    const adminLink  = document.getElementById('navbar-admin-link');
+    const adminBadge = document.getElementById('navbar-admin-badge');
     if (isAdminUser(currentUser)) {
-      const adminLink = document.getElementById('navbar-admin-link');
-      if (adminLink) adminLink.classList.remove('hidden');
-      const adminBadge = document.getElementById('navbar-admin-badge');
-      if (adminBadge) adminBadge.classList.remove('hidden');
+      if (adminLink)  { adminLink.classList.remove('hidden');  adminLink.style.display  = ''; }
+      if (adminBadge) { adminBadge.classList.remove('hidden'); adminBadge.style.display = 'inline-flex'; }
+    } else {
+      if (adminLink)  { adminLink.classList.add('hidden');  adminLink.style.display  = 'none'; }
+      if (adminBadge) { adminBadge.classList.add('hidden'); adminBadge.style.display = 'none'; }
     }
   }
 
@@ -71,6 +76,9 @@ function bindLogoutButton() {
     apiLogout().catch(error => {
       console.warn(error.message);
     });
+
+    /* 다음 로그인 사용자에게 잔여 매칭 상태가 남지 않도록 정리 */
+    try { localStorage.removeItem('matching_state'); } catch (_) {}
 
     clearToken();
     window.location.replace('/');

@@ -12,6 +12,7 @@ function setText(id, value) {
 /* ── 현재 로그인 유저 캐시 ── */
 let myUserId = null;
 let myUserPk = null;
+let onlineUsersCache = [];  // 마지막으로 조회한 온라인 유저 목록
 
 /* ── 내 프로필 ── */
 function renderMyProfile(user) {
@@ -72,7 +73,9 @@ async function loadOnlineUsers() {
 
   try {
     const users = await apiRequest('/users/online');
-    const others = users.filter(u => u.user_id !== myUserId);  // 자신 제외
+    /* 백엔드에서 본인은 이미 제외하지만, 캐시 적용 전 응답이 섞일 수 있어 한 번 더 필터. */
+    const others = users.filter(u => u.user_id !== myUserId);
+    onlineUsersCache = others;
 
     if (others.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">온라인 사용자 없음</td></tr>';
@@ -112,7 +115,7 @@ async function loadOnlineUsers() {
 const requestButton = document.getElementById('btn-request-battle');
 const opponentInput = document.getElementById('opponent-nickname');
 
-function goBattleRequest(userId, nickname) {
+async function goBattleRequest(userId, nickname) {
   const targetId   = (userId || opponentInput?.value || '').trim();
   const displayName = nickname || targetId;
   if (!targetId) return;
@@ -123,7 +126,32 @@ function goBattleRequest(userId, nickname) {
     return;
   }
 
-  window.location.href = `/matching?mode=request&opponent=${encodeURIComponent(displayName)}&target=${encodeURIComponent(targetId)}`;
+  /* 온라인 여부 사전 검증 — 매칭 페이지 진입 전에 차단.
+     온라인 사용자 캐시에 없으면 오프라인으로 간주.
+     백엔드 /users/{id} 는 user_id 기준이라 닉네임 입력은 못 찾으므로
+     이 단계에서는 캐시 매칭만 신뢰하고, 서버 검증은 /match/request 에 위임. */
+  const cached = onlineUsersCache.find(
+    u => u.user_id === targetId || u.nickname === targetId
+  );
+
+  if (cached) {
+    if (!cached.is_online) {
+      alert('오프라인 사용자입니다.');
+      return;
+    }
+    if (cached.is_battling) {
+      alert('상대방이 이미 배틀 중입니다.');
+      return;
+    }
+  } else {
+    /* 캐시에 없는 경우 — 입력값이 닉네임/ID 어느 쪽이든 온라인 목록에 없는 사용자.
+       온라인이 아니라면 오프라인 사용자로 간주하고 진입을 막는다. */
+    alert('오프라인 사용자입니다. 온라인 상태인 사용자에게만 배틀을 신청할 수 있습니다.');
+    return;
+  }
+
+  const resolvedDisplay = nickname || cached?.nickname || displayName;
+  window.location.href = `/matching?mode=request&opponent=${encodeURIComponent(resolvedDisplay)}&target=${encodeURIComponent(targetId)}`;
 }
 
 if (requestButton && opponentInput) {
@@ -134,6 +162,9 @@ if (requestButton && opponentInput) {
 }
 
 /* ── 초기화 ── */
-loadMyProfile();
-loadOnlineUsers();
-setInterval(loadOnlineUsers, 5000);   // 온라인 목록은 5초마다 갱신
+/* myUserId 가 설정된 뒤 온라인 목록을 불러와야 본인 제외 필터가 정확히 동작. */
+(async () => {
+  await loadMyProfile();
+  await loadOnlineUsers();
+  setInterval(loadOnlineUsers, 5000);   // 온라인 목록은 5초마다 갱신
+})();

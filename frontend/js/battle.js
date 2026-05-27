@@ -232,9 +232,17 @@ async function loadBattleNavbar() {
     const nickname = document.getElementById('navbar-nickname');
     if (nickname && currentUser) nickname.textContent = currentUser.nickname || '-';
 
-    // 관리자면 관리자 탭 표시
+    // 관리자만 관리자 탭 표시, 비관리자는 inline style 로도 차단
     const adminLink = document.getElementById('navbar-admin-link');
-    if (adminLink && isAdminUser(currentUser)) adminLink.classList.remove('hidden');
+    if (adminLink) {
+      if (isAdminUser(currentUser)) {
+        adminLink.classList.remove('hidden');
+        adminLink.style.display = '';
+      } else {
+        adminLink.classList.add('hidden');
+        adminLink.style.display = 'none';
+      }
+    }
 
     // 로그아웃 바인딩
     const logoutBtn = document.getElementById('btn-logout');

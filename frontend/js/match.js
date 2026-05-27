@@ -1,17 +1,14 @@
 /* ────────────────────────────────────────────────────────────
-   match.js  — 배틀 요청 수신/수락/거절 + 로비 WebSocket
-   main.html 에서 로드됨
+   match.js  — 배틀 요청 수신/수락/거절 + 받은 신청 목록
+   WS 연결은 lobby.js 가 공용으로 담당 — 여기서는 이벤트만 구독.
 ──────────────────────────────────────────────────────────── */
-
-function getMatchWsUrl(path) {
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${proto}//${location.host}${path}`;
-}
 
 /* ── 수락 ── */
 async function acceptRequest(requestId) {
   try {
     const result = await apiRequest(`/match/request/${requestId}/accept`, { method: 'POST' });
+    /* 수락한 측은 매칭 상태가 아님 — 혹시 남아있던 상태가 있으면 정리 */
+    if (window.Lobby) Lobby.stopMatching();
     window.location.href = `/battle?battle_id=${result.battle_id}`;
   } catch (error) {
     alert(error.message);
@@ -69,77 +66,13 @@ async function loadPendingRequests() {
   }
 }
 
-/* ── 로비 WebSocket — 자동 재연결 포함 ── */
-let matchLobbyWs       = null;
-let matchWsReconnTimer = null;
+/* ── lobby 이벤트 구독 ── */
+window.addEventListener('lobby:battle_request', () => loadPendingRequests());
+window.addEventListener('lobby:open',           () => {
+  loadPendingRequests();
+  if (typeof loadMyProfile === 'function') loadMyProfile();
+});
 
-function connectMatchLobbyWs() {
-  const token = getToken();
-  if (!token) return;
-
-  /* 기존 연결 정리 */
-  if (matchLobbyWs) {
-    matchLobbyWs.onclose = null;
-    matchLobbyWs.close();
-    matchLobbyWs = null;
-  }
-  if (matchWsReconnTimer) {
-    clearTimeout(matchWsReconnTimer);
-    matchWsReconnTimer = null;
-  }
-
-  const ws = new WebSocket(getMatchWsUrl(`/ws/lobby?token=${encodeURIComponent(token)}`));
-  matchLobbyWs = ws;
-
-  ws.onopen = () => {
-    console.log('[match.js] lobby WS connected');
-    loadPendingRequests();   /* 연결 직후 즉시 갱신 */
-
-    /* 내 프로필 상태 갱신 — WS 연결 후 is_online=true 반영 */
-    if (typeof loadMyProfile === 'function') loadMyProfile();
-
-    /* Render.com 유휴 연결 방지: 25초마다 ping 전송 */
-    const hbTimer = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send('ping');
-      } else {
-        clearInterval(hbTimer);
-      }
-    }, 25000);
-  };
-
-  ws.onmessage = (event) => {
-    if (event.data === 'pong') return;  /* heartbeat 응답 무시 */
-    try {
-      const data = JSON.parse(event.data);
-
-      if (data.type === 'battle_request') {
-        /* 배틀 신청 수신 → 즉시 목록 갱신 */
-        loadPendingRequests();
-      } else if (data.type === 'match_found') {
-        /* 자동 매칭 완료 (메인 페이지에 있는 동안 매칭된 경우) */
-        window.location.href = `/battle?battle_id=${data.battle_id}`;
-      }
-    } catch (e) {
-      console.warn('[match.js] WS parse error', e);
-    }
-  };
-
-  ws.onerror = (err) => console.warn('[match.js] lobby WS error', err);
-
-  ws.onclose = () => {
-    console.warn('[match.js] lobby WS closed — 3초 후 재연결');
-    matchLobbyWs = null;
-    matchWsReconnTimer = setTimeout(() => {
-      if (getToken()) connectMatchLobbyWs();
-    }, 3000);
-  };
-}
-
-/* ── 초기화 ──
-   페이지 로드 시 즉시 실행
-   + 3초 폴링으로 WS 유실 시에도 최대 3초 내 신청 표시 보장
-─────────────────────────────────────────────────────────── */
+/* ── 초기 로드 + 폴링 (WS 유실 시 백업) ── */
 loadPendingRequests();
-connectMatchLobbyWs();
 setInterval(loadPendingRequests, 3000);

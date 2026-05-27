@@ -19,7 +19,8 @@ async def get_online_users(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return await UserRepository.get_online_users(db)
+    # 본인은 목록에서 제외 — 자기 자신에게 배틀 신청 불가
+    return await UserRepository.get_online_users(db, exclude_user_pk=current_user.id)
 
 @router.get("/me/stats", response_model=list[BattleRead])
 async def get_battle_history(

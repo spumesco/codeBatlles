@@ -147,6 +147,13 @@ header nav a.active {
   vertical-align: middle;
 }
 
+/* 관리자가 아닐 때는 무조건 숨김 — Tailwind .hidden 보다 specificity 우선 */
+.admin-badge.hidden,
+#navbar-admin-link.hidden,
+#navbar-admin-badge.hidden {
+  display: none !important;
+}
+
 html.dark body,
 body.dark-preview {
   background-color: #121417;
