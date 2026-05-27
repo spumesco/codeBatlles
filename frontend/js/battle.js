@@ -212,6 +212,36 @@ function connectBattleWs() {
   }
 }
 
+/* ── 사용자가 명시적으로 배틀 종료(포기) 클릭 ── */
+async function endBattleByUser(btnEl) {
+  if (battleEnded) return;
+  const ok = confirm('배틀을 종료하시겠습니까?\n진행 중이면 상대방의 승리로 처리됩니다.');
+  if (!ok) return;
+
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = '종료 중...'; }
+
+  /* 1) WS 가 살아있으면 즉시 forfeit 메시지 — 백엔드가 바로 end_battle 실행 */
+  if (battleWs && battleWs.readyState === WebSocket.OPEN) {
+    try { battleWs.send(JSON.stringify({ type: 'forfeit' })); } catch (_) {}
+  }
+
+  /* 2) HTTP 로도 한 번 더 — WS 가 실패해도 보장. /users/me/forfeit 는 이미 진행 중인 배틀을
+        상대 승으로 종료해 주고, 진행 중인 배틀이 없으면 플래그만 정리한다. */
+  try {
+    await apiRequest('/users/me/forfeit', { method: 'POST' });
+  } catch (err) {
+    console.warn('forfeit API 실패:', err.message);
+  }
+
+  /* 3) WS battle_end 가 도착하면 onBattleEnd 가 /result 로 이동시키지만,
+        WS 가 죽었거나 늦어질 수 있으니 짧은 fallback. */
+  setTimeout(() => {
+    if (battleEnded) return;
+    isLeavingForResult = true;
+    window.location.href = `/result?battle_id=${getBattleId()}`;
+  }, 1500);
+}
+
 /* ── 페이지 종료/이탈 시 자동 포기 ──
    - 배틀 종료 후의 /result 이동은 unloading 플래그로 구분해 forfeit 신호 보내지 않음.
    - 진행 중 상태라면 사용자가 의도적으로 떠난 것으로 간주하고 즉시 종료 신호 송신.
@@ -315,6 +345,12 @@ async function loadBattleNavbar() {
         clearToken();
         window.location.replace('/');
       });
+    }
+
+    // 배틀 종료(포기) 버튼 — 즉시 forfeit 처리 후 결과 페이지로
+    const endBattleBtn = document.getElementById('btn-end-battle');
+    if (endBattleBtn) {
+      endBattleBtn.addEventListener('click', () => endBattleByUser(endBattleBtn));
     }
   } catch (error) {
     console.warn(error.message);

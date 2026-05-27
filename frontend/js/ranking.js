@@ -4,8 +4,10 @@ const tbody = document.getElementById('ranking-tbody');
 const emptyState = document.getElementById('empty-state');
 const searchInput = document.getElementById('search-input');
 const sortSelect = document.getElementById('sort-select');
+const myRankEl = document.getElementById('stat-my-rank');
 
 let allUsers = [];
+let myUserId = null;   // 현재 로그인 사용자의 user_id (문자열)
 
 /* ── 유틸 ── */
 function winRate(user) {
@@ -14,11 +16,26 @@ function winRate(user) {
 }
 
 function updateStats(data) {
-  const totalBattles = data.reduce((sum, u) => sum + u.wins + u.loses, 0);
-  const bestRate = data.length ? Math.max(...data.map(winRate)) : 0;
+  /* 한 배틀은 승자에게 wins+1, 패자에게 loses+1 을 각각 적재한다.
+     따라서 sum(wins) === sum(loses) === 진행된 총 배틀 수.
+     이전 코드처럼 wins+loses 를 합하면 정확히 2배가 카운트된다. */
+  const totalBattles = data.reduce((sum, u) => sum + u.wins, 0);
+  /* 한 판도 안 한 사용자는 승률 계산 대상에서 제외 — 0% 가 최고 승률로 잡히지 않게. */
+  const ratable = data.filter(u => (u.wins + u.loses) > 0);
+  const bestRate = ratable.length ? Math.max(...ratable.map(winRate)) : 0;
   document.getElementById('stat-users').textContent = data.length;
   document.getElementById('stat-battles').textContent = totalBattles;
   document.getElementById('stat-rate').textContent = `${bestRate}%`;
+}
+
+/* 내 순위는 항상 "전체 정렬" 기준으로 계산해야 — 검색/필터 결과에 영향받지 않음. */
+function updateMyRank() {
+  if (!myRankEl) return;
+  if (!myUserId) { myRankEl.textContent = '-'; return; }
+  const sortedAll = sortData(allUsers);
+  const idx = sortedAll.findIndex(u => u.userId === myUserId);
+  if (idx === -1) { myRankEl.textContent = '-'; return; }
+  myRankEl.textContent = `#${idx + 1}`;
 }
 
 function sortData(data) {
@@ -60,11 +77,18 @@ function render() {
   });
 
   updateStats(sorted);
+  updateMyRank();
 }
 
 /* ── API 로드 ── */
 async function loadLeaderboard() {
   try {
+    /* 본인 식별값 — 내 순위 계산에 필요. 실패해도 랭킹 자체는 표시한다. */
+    try {
+      const me = await getMe();
+      myUserId = me.user_id;
+    } catch (_) { myUserId = null; }
+
     const users = await apiRequest('/users/leaderboard?limit=100');
     allUsers = users.map(u => ({
       nickname: u.nickname,
