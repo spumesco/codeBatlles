@@ -61,9 +61,22 @@ function hideCountdown() {
   if (modal) modal.classList.add('hidden');
 }
 
+/* 가장 최근에 받은 문제 — 내비바가 늦게 로드되더라도 제목을 채울 수 있게 캐시 */
+let currentProblem = null;
+
+function setNavbarProblemTitle() {
+  if (!currentProblem) return;
+  const navTitle = document.getElementById('navbar-problem-title');
+  if (navTitle) {
+    navTitle.textContent = currentProblem.title || '-';
+    navTitle.title       = currentProblem.title || '';
+  }
+}
+
 /* ── 문제 렌더링 ── */
 function renderProblem(problem) {
   if (!problem) return;
+  currentProblem = problem;
   document.getElementById('problemTitle').textContent = problem.title || '-';
   document.getElementById('problemDifficulty').textContent = problem.difficulty || '-';
   document.getElementById('problemTimeLimit').textContent = problem.time_limit ?? '-';
@@ -73,6 +86,23 @@ function renderProblem(problem) {
   document.getElementById('problemOutputDescription').textContent = problem.output_description || '-';
   document.getElementById('problemSampleInput').textContent = problem.sample_input || '-';
   document.getElementById('problemSampleOutput').textContent = problem.sample_output || '-';
+
+  /* 상단바에 문제 제목 노출 — 패널이 닫혀 있어도 어떤 문제인지 항상 보이게.
+     내비바가 아직 로드되지 않았다면 setNavbarProblemTitle 이 나중에 채움. */
+  setNavbarProblemTitle();
+}
+
+/* 문제 패널 자동 열기 — 처음 한 번만 (사용자가 닫았으면 다시 열지 않음) */
+let drawerAutoOpened = false;
+function ensureDrawerOpen() {
+  if (drawerAutoOpened) return;
+  drawerAutoOpened = true;
+  const drawer = document.getElementById('drawer');
+  const toggleButton = document.getElementById('toggleDrawer');
+  if (drawer && !drawer.classList.contains('open')) {
+    drawer.classList.add('open');
+    if (toggleButton) toggleButton.textContent = '문제 닫기';
+  }
 }
 
 async function loadBattleProblem() {
@@ -83,6 +113,8 @@ async function loadBattleProblem() {
     if (!battle.problem_id) return;
     const problem = await apiRequest(`/problems/${battle.problem_id}`);
     renderProblem(problem);
+    /* 문제가 로드되면 패널을 자동으로 펼쳐 어떤 문제인지 즉시 보이게 한다. */
+    ensureDrawerOpen();
   } catch (error) {
     console.warn('문제 로드 실패', error);
   }
@@ -232,6 +264,9 @@ async function loadBattleNavbar() {
     const nickname = document.getElementById('navbar-nickname');
     if (nickname && currentUser) nickname.textContent = currentUser.nickname || '-';
 
+    /* 내비바 DOM 이 막 삽입됐으므로, 이전에 로드된 문제 제목을 지금 채워준다. */
+    setNavbarProblemTitle();
+
     // 관리자만 관리자 탭 표시, 비관리자는 inline style 로도 차단
     const adminLink = document.getElementById('navbar-admin-link');
     if (adminLink) {
@@ -268,8 +303,17 @@ function bindBattleEvents() {
   if (submitButton) submitButton.addEventListener('click', submitCode);
 }
 
+/* ── 코드 에디터 보강 (자동 괄호 + 들여쓰기) ── */
+function setupCodeEditor() {
+  const editor = document.getElementById('myCodeEditor');
+  if (editor && typeof enhanceCodeEditor === 'function') {
+    enhanceCodeEditor(editor);
+  }
+}
+
 /* ── 초기화 ── */
 loadBattleNavbar();
 bindBattleEvents();
 connectBattleWs();
 loadBattleProblem();
+setupCodeEditor();

@@ -9,7 +9,7 @@ from app.repositories.submission_repository import SubmissionRepository
 from app.schemas.battle import BattleRead
 from app.schemas.submission import SubmissionCreate, SubmissionRead
 from app.services.battle_service import BattleService
-from app.services.judge_service import JudgeService
+from app.services.judge_service import JudgeService, JudgeUnavailable
 
 router = APIRouter(prefix="/battles", tags=["battles"])
 
@@ -95,12 +95,27 @@ async def submit(
         raise HTTPException(status_code=400, detail="이미 정답을 제출했습니다.")
 
     problem = await ProblemRepository.get_problem(db, battle.problem_id)
-    test_cases = await ProblemRepository.get_test_cases(db, battle.problem_id)
+    if not problem:
+        raise HTTPException(status_code=400, detail="배틀에 연결된 문제를 찾을 수 없습니다.")
 
-    result = await JudgeService.judge_all(
-        body.source_code, body.language, test_cases,
-        problem.time_limit, problem.memory_limit,
-    )
+    test_cases = await ProblemRepository.get_test_cases(db, battle.problem_id)
+    if not test_cases:
+        raise HTTPException(
+            status_code=400,
+            detail="해당 문제에 등록된 테스트 케이스가 없어 채점할 수 없습니다.",
+        )
+
+    try:
+        result = await JudgeService.judge_all(
+            body.source_code, body.language, test_cases,
+            problem.time_limit, problem.memory_limit,
+        )
+    except JudgeUnavailable as e:
+        # 채점 서버 다운/타임아웃은 사용자에게 명확히 안내.
+        raise HTTPException(status_code=503, detail=f"채점 서버를 사용할 수 없습니다. {e}") from e
+    except Exception as e:
+        # 그 외 예기치 못한 채점 오류 — 500 대신 502 로 변환해 사용자에게 메시지 노출.
+        raise HTTPException(status_code=502, detail=f"채점 중 오류가 발생했습니다: {e!s}") from e
 
     sub = await SubmissionRepository.create_submission(
         db, battle_id, current_user.id, battle.problem_id,
