@@ -14,7 +14,14 @@ import logging
 import os
 from typing import Optional
 
-import httpx
+# httpx 가 환경에 따라 미설치일 수 있어 soft-import.
+# 미설치 시 Judge0 호출은 자동으로 스킵되고 LocalExecutor 폴백으로 직행한다.
+try:
+    import httpx  # type: ignore
+    HAS_HTTPX = True
+except ImportError:
+    httpx = None  # type: ignore
+    HAS_HTTPX = False
 
 from app.config import settings
 from app.services.local_executor import LocalExecutor
@@ -59,6 +66,10 @@ class JudgeService:
             "cpu_time_limit": time_limit,
             "memory_limit": memory_limit * 1024,
         }
+        # httpx 가 설치 안 됐으면 Judge0 호출 자체가 불가 — 폴백으로 직행
+        if not HAS_HTTPX:
+            return None
+
         url = f"{settings.JUDGE0_URL}/submissions?base64_encoded=false&wait=true"
         try:
             async with httpx.AsyncClient() as client:
