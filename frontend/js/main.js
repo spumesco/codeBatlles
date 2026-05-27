@@ -71,10 +71,24 @@ async function loadOnlineUsers() {
   const tbody = document.getElementById('online-users-tbody');
   if (!tbody) return;
 
+  /* 본인 식별값이 아직 없으면 먼저 프로필 조회 — 어떤 순서로 호출돼도
+     자기 자신이 절대 목록에 표시되지 않도록 한다. */
+  if (!myUserId) {
+    try { await loadMyProfile(); } catch (_) {}
+    if (!myUserId) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">불러오는 중...</td></tr>';
+      return;
+    }
+  }
+
   try {
     const users = await apiRequest('/users/online');
-    /* 백엔드에서 본인은 이미 제외하지만, 캐시 적용 전 응답이 섞일 수 있어 한 번 더 필터. */
-    const others = users.filter(u => u.user_id !== myUserId);
+    /* 백엔드도 본인을 제외하지만 캐시/구버전 응답에 대비해 한 번 더 필터.
+       user_id 와 PK 모두로 비교 — 어떤 필드로 와도 차단. */
+    const others = users.filter(u =>
+      u.user_id !== myUserId &&
+      String(u.id ?? '') !== String(myUserPk ?? '')
+    );
     onlineUsersCache = others;
 
     if (others.length === 0) {
