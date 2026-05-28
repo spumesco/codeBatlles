@@ -116,28 +116,43 @@ def _build_steps(language: str, tmpdir: str, source_code: str) -> Optional[dict]
         return {
             "src_path": src,
             "compile_cmd": [javac, "-encoding", "UTF-8", src],
-            # -Xss / -Xmx 는 호스트 환경에 따라 거부될 수 있어 보수적으로 -Xmx 만
-            "run_cmd": [java, "-Dfile.encoding=UTF-8", "-cp", tmpdir, cls_name],
+            # JVM 은 RLIMIT_AS 가 작으면 (예: 128MB) 시작 자체가 실패 → Runtime Error.
+            # 그래서 _make_limits 에서 Java 에는 RLIMIT_AS 를 적용하지 않고,
+            # 대신 여기서 -Xmx (힙) / -Xss (스레드 스택) 로 직접 제한한다.
+            #   -Xmx256m: 알고리즘 문제 풀이용으로 충분 (Render Free 512MB 안에서도 안전)
+            #   -Xss8m  : 깊은 재귀 대응
+            #   -XX:-UsePerfData: /tmp/hsperfdata 디스크 IO 제거 (제한된 컨테이너에서 안정성↑)
+            "run_cmd": [
+                java,
+                "-Xmx256m", "-Xss8m",
+                "-XX:-UsePerfData",
+                "-Dfile.encoding=UTF-8",
+                "-cp", tmpdir, cls_name,
+            ],
             "cwd": tmpdir,
         }
 
     return None
 
 
-def _make_limits(memory_mb: int, cpu_sec: int):
-    """preexec_fn 으로 자식 프로세스에 rlimit 적용. POSIX 전용."""
+def _make_limits(memory_mb: int, cpu_sec: int, is_java: bool = False):
+    """preexec_fn 으로 자식 프로세스에 rlimit 적용. POSIX 전용.
+
+    is_java: JVM 은 -Xmx 와 별개로 매우 큰 가상 주소 공간을 요구하므로
+             RLIMIT_AS 를 적용하면 JVM 시작 자체가 실패 (Runtime Error).
+             Java 일 땐 RLIMIT_AS 를 적용하지 않고, -Xmx 로 힙만 제한한다.
+    """
     mem_bytes = max(64, int(memory_mb or 128)) * 1024 * 1024
-    # Java JIT 은 메모리를 더 먹으므로 호출자가 충분히 크게 잡아야 함
 
     def apply():
         if not HAS_RESOURCE:
             return
-        # 가상 메모리 (Address space). Java 에는 영향이 큼 — Java 채점 시
-        # 메모리 제한을 더 크게 잡거나, 이 줄을 언어별로 조정 필요.
-        try:
-            resource.setrlimit(resource.RLIMIT_AS, (mem_bytes, mem_bytes))
-        except (OSError, ValueError):
-            pass
+        # 가상 메모리 (Address space) — Python/C/C++ 에만 적용.
+        if not is_java:
+            try:
+                resource.setrlimit(resource.RLIMIT_AS, (mem_bytes, mem_bytes))
+            except (OSError, ValueError):
+                pass
         try:
             resource.setrlimit(resource.RLIMIT_CPU, (cpu_sec + 1, cpu_sec + 2))
         except (OSError, ValueError):
@@ -294,7 +309,10 @@ class LocalExecutor:
     ) -> dict:
         cpu_secs = max(1, int(time_limit or 2))
         wall_timeout = float(cpu_secs) + 1.0
-        preexec = _make_limits(memory_limit_mb, cpu_secs) if os.name == "posix" else None
+        # Java(JVM)는 RLIMIT_AS 적용 시 시작 실패 — cmd 첫 항목으로 판별해서
+        # _make_limits 에 알려준다 (Java 면 RLIMIT_AS 스킵).
+        is_java = bool(cmd) and os.path.basename(str(cmd[0])) == "java"
+        preexec = _make_limits(memory_limit_mb, cpu_secs, is_java=is_java) if os.name == "posix" else None
 
         start = time.monotonic()
         try:
