@@ -406,3 +406,75 @@ class LocalExecutor:
         if got == want:
             return {"status": "Accepted", "time": run["time"], "memory": None}
         return {"status": "Wrong Answer", "time": run["time"], "memory": None}
+
+    # ── 전체 테스트 케이스 배치 채점 (컴파일 1회 + 실행 N회) ──
+    @classmethod
+    async def judge_all_local(
+        cls,
+        source_code: str,
+        language: str,
+        test_cases: list,
+        time_limit: int,
+        memory_limit_mb: int,
+    ) -> dict:
+        """소스를 한 번만 컴파일하고 모든 테스트케이스에 동일 실행 파일을 재사용.
+
+        Java/C/C++ 처럼 컴파일 비용이 큰 언어에서 큰 속도 차이.
+        Java 10 케이스 기준: 컴파일 1.5s + 실행(0.5s×10) ≈ 6.5s
+                            (기존: 1.5s×10 + 0.5s×10 ≈ 20s)
+
+        반환: 첫 비-Accepted 결과를 즉시 반환, 모두 통과 시 Accepted.
+        """
+        if not test_cases:
+            return {"status": "No Test Cases", "time": None, "memory": None}
+
+        tmpdir = tempfile.mkdtemp(prefix="cb_batch_")
+        try:
+            steps = _build_steps(language, tmpdir, source_code)
+            if not steps:
+                return {
+                    "status": "Unsupported Language",
+                    "time": None, "memory": None,
+                }
+
+            # 소스 작성 (1회)
+            with open(steps["src_path"], "w", encoding="utf-8") as f:
+                f.write(source_code)
+
+            # 컴파일 (1회)
+            if steps["compile_cmd"]:
+                compile_res = await cls._run_compile(steps["compile_cmd"], steps["cwd"])
+                if compile_res["status"] != "OK":
+                    return {
+                        "status": compile_res["status"],
+                        "time": None, "memory": None,
+                    }
+
+            # 실행 (테스트케이스마다)
+            for tc in test_cases:
+                stdin = getattr(tc, "input_data", "") or ""
+                expected = getattr(tc, "expected_output", "") or ""
+
+                run = await cls._run_program(
+                    steps["run_cmd"], steps["cwd"],
+                    stdin, time_limit, memory_limit_mb,
+                )
+                if run["status"] != "OK":
+                    return {
+                        "status": run["status"],
+                        "time": run.get("time"),
+                        "memory": run.get("memory"),
+                    }
+
+                got  = _normalize_output(run["stdout"])
+                want = _normalize_output(expected)
+                if got != want:
+                    return {
+                        "status": "Wrong Answer",
+                        "time": run["time"],
+                        "memory": None,
+                    }
+
+            return {"status": "Accepted", "time": None, "memory": None}
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)

@@ -149,12 +149,52 @@ class JudgeService:
             # 빈 코드로 자동 Accepted 되는 사고 방지
             return {"status": "No Test Cases", "time": None, "memory": None}
 
-        for tc in test_cases:
-            result = await JudgeService._submit_one(
-                source_code, language,
-                tc.input_data, tc.expected_output,
-                time_limit, memory_limit,
+        # ── 1) Judge0 으로 첫 케이스를 시도해 가용성 판단 ───────────
+        first_tc = test_cases[0]
+        first = await JudgeService._submit_to_judge0(
+            source_code, language,
+            first_tc.input_data, first_tc.expected_output,
+            time_limit, memory_limit,
+        )
+
+        if first is not None:
+            # Judge0 살아있음 — 모든 케이스를 Judge0 으로 채점
+            if first["status"] != "Accepted":
+                return first
+            for tc in test_cases[1:]:
+                result = await JudgeService._submit_to_judge0(
+                    source_code, language,
+                    tc.input_data, tc.expected_output,
+                    time_limit, memory_limit,
+                )
+                if result is None:
+                    # Judge0 가 중간에 죽으면 남은 케이스는 로컬로 폴백
+                    return await JudgeService._fallback_batch(
+                        source_code, language, test_cases,
+                        time_limit, memory_limit,
+                    )
+                if result["status"] != "Accepted":
+                    return result
+            return {"status": "Accepted", "time": None, "memory": None}
+
+        # ── 2) Judge0 다운 → 로컬 폴백 (컴파일 1회 + 실행 N회) ──────
+        return await JudgeService._fallback_batch(
+            source_code, language, test_cases,
+            time_limit, memory_limit,
+        )
+
+    @staticmethod
+    async def _fallback_batch(
+        source_code: str,
+        language: str,
+        test_cases: list,
+        time_limit: int,
+        memory_limit: int,
+    ) -> dict:
+        """로컬 배치 폴백: Java/C/C++ 처럼 컴파일 비용 큰 언어에서 큰 속도 향상."""
+        if USE_LOCAL_FALLBACK and LocalExecutor.is_supported(language):
+            logger.info("로컬 배치 폴백으로 채점 — language=%s, cases=%d", language, len(test_cases))
+            return await LocalExecutor.judge_all_local(
+                source_code, language, test_cases, time_limit, memory_limit,
             )
-            if result["status"] != "Accepted":
-                return result
-        return {"status": "Accepted", "time": None, "memory": None}
+        return {"status": "Judge Unavailable", "time": None, "memory": None}
