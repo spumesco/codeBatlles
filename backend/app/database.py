@@ -17,6 +17,12 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     connect_args=connect_args,
     echo=False,
+    # MySQL 호스팅이 유휴 연결을 끊으면 SQLAlchemy 풀에 stale 한 connection 이 남아
+    # 다음 쿼리에서 'Lost connection to MySQL server during query (2013)' 가 터진다.
+    # pool_pre_ping: 매 쿼리 직전에 ping 으로 살아있는지 확인 (작은 오버헤드, 안정성↑)
+    # pool_recycle: 280초 지나면 강제 재연결 (MySQL wait_timeout 보통 300s 직전 회수)
+    pool_pre_ping=True,
+    pool_recycle=280,
 )
 
 AsyncSessionLocal = async_sessionmaker(
