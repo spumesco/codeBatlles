@@ -15,18 +15,16 @@
 # ────────────────────────────────────────────────────────────
 FROM python:3.11-slim
 
-# ── 시스템 패키지 ────────────────────────────────────────────
-# gcc/g++              : C, C++ 컴파일
-# openjdk-17-jdk-headless : javac + java (Java 채점)
-#   - default-jdk-headless 가 슬림 이미지에서 javac 누락되는 케이스가 있어
-#     버전 명시 패키지로 고정.
-# build-essential      : Python 의 일부 wheel 빌드(bcrypt 등)에 필요
-# default-libmysqlclient-dev, pkg-config : MySQL 드라이버 빌드용
-# ca-certificates      : HTTPS (RapidAPI 등 외부 호출용)
+# ── 빌드 마커 — Render 의 빌드 캐시가 옛 레이어를 재사용하지 못하게 강제. ──
+# 값이 바뀌면 ARG 이후의 모든 RUN 이 다시 실행됨. 또한 /api/health 에 노출돼
+# 운영에 정확히 어느 빌드가 떠 있는지 즉시 확인 가능.
+ARG BUILD_MARKER=2026-05-28-jdk-fallback-1
+ENV BUILD_MARKER=$BUILD_MARKER
+
+# ── 시스템 패키지 — C/C++ 컴파일러 ────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
         gcc \
         g++ \
-        openjdk-17-jdk-headless \
         build-essential \
         default-libmysqlclient-dev \
         pkg-config \
@@ -34,9 +32,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# ── 빌드 시 검증 — 채점기에 필요한 도구가 모두 깔렸는지 확인 ──
-# 하나라도 없으면 RUN 이 0이 아닌 코드로 종료되어 빌드가 빨간색으로 실패한다.
-# (런타임에 "Judge Unavailable" 같은 모호한 에러로 시간 낭비하지 않게)
+# ── JDK 설치 — 여러 패키지 후보를 순차 시도 ──────────────────
+# Debian 미러에 따라 일부 패키지가 못 찾아지는 경우가 있어 폴백 체인 구성.
+# 우선순위: openjdk-17 → openjdk-21 → openjdk-11 → default-jdk
+# 마지막 후보까지 실패하면 빌드 자체가 실패함 (set -e + exit 1).
+RUN set -eux; \
+    apt-get update; \
+    if   apt-get install -y --no-install-recommends openjdk-17-jdk-headless; then \
+        echo "[Dockerfile] installed openjdk-17-jdk-headless"; \
+    elif apt-get install -y --no-install-recommends openjdk-21-jdk-headless; then \
+        echo "[Dockerfile] installed openjdk-21-jdk-headless"; \
+    elif apt-get install -y --no-install-recommends openjdk-11-jdk-headless; then \
+        echo "[Dockerfile] installed openjdk-11-jdk-headless"; \
+    elif apt-get install -y --no-install-recommends default-jdk; then \
+        echo "[Dockerfile] installed default-jdk"; \
+    else \
+        echo "[Dockerfile] FATAL: no JDK package available" >&2; exit 1; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*
+
+# ── 빌드 시 검증 — 채점에 필요한 도구가 실제로 동작하는지 확인 ──
+# 하나라도 없으면 빌드가 빨간색으로 실패해서 "Judge Unavailable" 같은
+# 모호한 런타임 에러로 디버깅 시간 낭비할 일이 없다.
 RUN set -eux; \
     which gcc   && gcc --version | head -1; \
     which g++   && g++ --version | head -1; \
