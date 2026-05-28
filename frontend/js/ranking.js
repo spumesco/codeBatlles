@@ -16,16 +16,22 @@ function winRate(user) {
 }
 
 function updateStats(data) {
-  /* 한 배틀은 승자에게 wins+1, 패자에게 loses+1 을 각각 적재한다.
-     따라서 sum(wins) === sum(loses) === 진행된 총 배틀 수.
-     이전 코드처럼 wins+loses 를 합하면 정확히 2배가 카운트된다. */
-  const totalBattles = data.reduce((sum, u) => sum + u.wins, 0);
-  /* 한 판도 안 한 사용자는 승률 계산 대상에서 제외 — 0% 가 최고 승률로 잡히지 않게. */
-  const ratable = data.filter(u => (u.wins + u.loses) > 0);
-  const bestRate = ratable.length ? Math.max(...ratable.map(winRate)) : 0;
+  /* 본인 통계 — 로그인 사용자(myUserId) 기준.
+     allUsers 가 검색/필터링되기 전 원본이라 filtered 가 아닌 allUsers 에서 찾는다.
+     본인이 leaderboard 응답에 없는 경우(미접속/제외) 0 으로 폴백. */
+  let myBattles = 0;
+  let myRate = 0;
+  if (myUserId) {
+    const me = allUsers.find(u => u.userId === myUserId);
+    if (me) {
+      myBattles = me.wins + me.loses;
+      if (myBattles > 0) myRate = winRate(me);
+    }
+  }
+
   document.getElementById('stat-users').textContent = data.length;
-  document.getElementById('stat-battles').textContent = totalBattles;
-  document.getElementById('stat-rate').textContent = `${bestRate}%`;
+  document.getElementById('stat-battles').textContent = myBattles;
+  document.getElementById('stat-rate').textContent = `${myRate}%`;
 }
 
 /* 내 순위는 항상 "전체 정렬" 기준으로 계산해야 — 검색/필터 결과에 영향받지 않음. */
