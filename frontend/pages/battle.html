@@ -12,10 +12,16 @@
 
 <div id="navbar-container"></div>
 
-<div class="countdown-backdrop" id="countdownModal" role="dialog" aria-modal="true" aria-labelledby="countdownLabel">
+<!--
+  카운트다운 모달.
+  초기엔 .hidden 으로 숨겨두고, 서버의 첫 'countdown' WebSocket 메시지가
+  도착했을 때 battle.js 의 updateCountdown 이 .hidden 을 제거하며 등장시킨다.
+  → 페이지 진입 시 하드코딩된 숫자가 깜빡 보였다가 정정되는 버그 방지.
+-->
+<div class="countdown-backdrop hidden" id="countdownModal" role="dialog" aria-modal="true" aria-labelledby="countdownLabel">
   <div class="countdown-modal">
     <div class="countdown-label" id="countdownLabel">배틀 시작까지</div>
-    <div class="countdown-number" id="countdownNumber">5</div>
+    <div class="countdown-number" id="countdownNumber"></div>
   </div>
 </div>
 

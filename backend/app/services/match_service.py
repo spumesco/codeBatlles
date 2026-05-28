@@ -53,9 +53,13 @@ class MatchService:
         asyncio.create_task(MatchService._countdown_and_start(battle.id))
         return battle
 
+    # 배틀 시작 전 카운트다운 길이(초).
+    # 변경 시 frontend/pages/battle.html 의 초기 표기 및 안내도 함께 맞출 것.
+    COUNTDOWN_SECONDS = 5
+
     @staticmethod
     async def _countdown_and_start(battle_id: int) -> None:
-        for count in range(10, 0, -1):
+        for count in range(MatchService.COUNTDOWN_SECONDS, 0, -1):
             await ws_manager.broadcast_to_battle(battle_id, {"type": "countdown", "count": count})
             await asyncio.sleep(1)
 
