@@ -27,3 +27,75 @@ body {
 input.w-full {
   box-sizing: border-box;
 }
+
+/* ── 비밀번호 강도 바 ───────────────────────────── */
+.password-strength-bar {
+  width: 100%;
+  height: 6px;
+  background: #e5e1e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.password-strength-fill {
+  height: 100%;
+  width: 0%;
+  background: #ba1a1a;          /* 0~1점: 빨강 */
+  transition: width 0.18s ease, background-color 0.18s ease;
+  border-radius: 3px;
+}
+.password-strength-fill[data-level="2"] { background: #e07f0a; } /* 주황 */
+.password-strength-fill[data-level="3"] { background: #d4a017; } /* 노랑 */
+.password-strength-fill[data-level="4"] { background: #6f8f1f; } /* 연두 */
+.password-strength-fill[data-level="5"] { background: #2e7d32; } /* 초록 (완벽) */
+
+/* ── 체크리스트 ─────────────────────────────────── */
+.password-check-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.pw-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a8483;
+  transition: color 0.15s ease;
+}
+
+.pw-check.passed {
+  color: #2e7d32;
+}
+
+.pw-check.failed {
+  color: #8a8483;
+}
+
+.pw-check-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 50%;
+  background: #f0ebea;
+  color: inherit;
+}
+
+.pw-check.passed .pw-check-icon {
+  background: #d7ead8;
+  color: #2e7d32;
+}
+
+/* 다크 테마 대응 */
+html.dark .password-strength-bar { background: #3a3535; }
+html.dark .pw-check { color: #a8a09f; }
+html.dark .pw-check.passed { color: #7ed084; }
+html.dark .pw-check-icon { background: #2a2626; }
+html.dark .pw-check.passed .pw-check-icon { background: #1f3a22; color: #7ed084; }

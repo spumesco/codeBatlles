@@ -52,7 +52,20 @@
             class="w-full px-md py-sm border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface bg-surface focus:outline-none focus:border-primary transition-colors"
           />
         </div>
-        <p class="field-help font-body-sm text-body-sm text-secondary mb-4"><strong>8자</strong> 이상, 특수문자 포함</p>
+
+        <!-- 비밀번호 강도 체크리스트 — 실시간 검증 표시 -->
+        <div id="password-checks" class="mt-2 mb-4 space-y-1">
+          <div class="password-strength-bar">
+            <div id="password-strength-fill" class="password-strength-fill" style="width:0%"></div>
+          </div>
+          <ul class="password-check-list">
+            <li id="pw-check-length" class="pw-check"><span class="pw-check-icon">✗</span><span>8자 이상</span></li>
+            <li id="pw-check-lower"  class="pw-check"><span class="pw-check-icon">✗</span><span>소문자 포함 (a-z)</span></li>
+            <li id="pw-check-upper"  class="pw-check"><span class="pw-check-icon">✗</span><span>대문자 포함 (A-Z)</span></li>
+            <li id="pw-check-digit"  class="pw-check"><span class="pw-check-icon">✗</span><span>숫자 포함 (0-9)</span></li>
+            <li id="pw-check-special" class="pw-check"><span class="pw-check-icon">✗</span><span>특수문자 포함 (!@#$ 등)</span></li>
+          </ul>
+        </div>
 
         <div class="mb-6">
           <label class="block font-body-sm text-body-sm text-on-surface-variant mb-1" for="password-confirm">비밀번호 확인</label>
