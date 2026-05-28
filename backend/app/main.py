@@ -122,7 +122,12 @@ def admin_problems_page():
 @app.get("/api/health")
 def health_check():
     """배포 진단용. 운영 백엔드가 신/구 어느 코드인지, 폴백 채점이 가능한지 한 번에 확인."""
+    import os, shutil
     info: dict = {"message": "CodeBattles backend is running"}
+
+    # 빌드 마커 — Dockerfile 의 ARG BUILD_MARKER 값. Render 가 새 이미지를 실제로
+    # 빌드/배포했는지 한 줄로 확인 가능.
+    info["build_marker"] = os.environ.get("BUILD_MARKER", "<unset>")
 
     # 로컬 폴백 채점기 상태 — 'judge_local_supported' 가 있으면 신 백엔드.
     try:
@@ -130,6 +135,11 @@ def health_check():
         info["judge_local_supported"] = LocalExecutor.supported_languages()
     except Exception as e:
         info["judge_local_supported"] = f"unavailable: {e!s}"
+
+    # 실제 호스트에 깔린 컴파일러/런타임 바이너리 경로 — JDK 가 진짜 들어왔는지 확인.
+    info["tools"] = {
+        b: shutil.which(b) for b in ("python3", "gcc", "g++", "javac", "java")
+    }
 
     # Judge0 폴백 토글
     try:
