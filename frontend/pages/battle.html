@@ -64,10 +64,13 @@
         <span class="editor-header-title">상대방 코드 읽기 전용</span>
         <span class="editor-status">상대방 상태: <strong>작성 중</strong></span>
       </div>
-      <div class="editor-body opponent-code">
-        <span class="code-muted"># 상대방이 작성 중입니다...</span><br/><br/>
-        <span class="code-keyword">print</span>(<span class="code-string">"상대 코드"</span>)
-      </div>
+      <!--
+        상대방 코드 영역.
+        초기엔 가짜 샘플을 보여주지 않고 빈 상태로 둔다.
+        상대가 입력하기 시작하면 'code_update' WebSocket 메시지가 와서
+        battle.js 의 updateOpponentCode 가 area.textContent 를 갱신한다.
+      -->
+      <div class="editor-body opponent-code"></div>
       <div class="editor-footer">
         <span class="footer-language">Python</span>
         <span class="footer-center">읽기 전용</span>
@@ -79,8 +82,7 @@
       <div class="editor-header">
         <span class="editor-header-title">내 코드</span>
       </div>
-      <textarea id="myCodeEditor" class="editor-body" placeholder="여기에 코드를 작성하세요...">a, b = map(int, input().split())
-print(a + b)</textarea>
+      <textarea id="myCodeEditor" class="editor-body" placeholder="여기에 코드를 작성하세요..."></textarea>
       <div class="editor-footer">
         <select id="languageSelect" class="lang-select">
           <option>Python</option>
