@@ -41,12 +41,25 @@ function renderMyProfile(user) {
   }
 }
 
+async function loadMyRanking() {
+  if (!myUserId) return;
+  try {
+    const users = await apiRequest('/users/leaderboard?limit=100');
+    const index = users.findIndex(user => user.user_id === myUserId);
+    setText('me-ranking', index >= 0 ? `#${index + 1}` : '-');
+  } catch (error) {
+    console.warn('ranking load failed:', error.message);
+    setText('me-ranking', '-');
+  }
+}
+
 async function loadMyProfile() {
   if (!getToken()) { window.location.href = '/login'; return; }
   try {
     const user = await getMe();
     myUserId = user.user_id;
     myUserPk = user.id;
+    user.is_online = true;
 
     /* 배틀 상태 자가 점검 — stuck (is_battling=true 인데 실제 배틀 없음) 자동 해제,
        진짜 진행 중인 배틀이면 복귀 패널 노출.
@@ -61,6 +74,7 @@ async function loadMyProfile() {
     }
 
     renderMyProfile(user);
+    await loadMyRanking();
     /* user.is_battling 이 true 거나 active battle 이 살아있을 때 항상 복구 패널 노출.
        API 가 죽었어도 사용자는 강제 해제로 빠져나올 수 있다. */
     renderBattleRecovery({
